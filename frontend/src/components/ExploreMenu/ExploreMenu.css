@@ -34,14 +34,13 @@
 }
 
 .explore-menu-list-item img {
-    width: 7.5vw;
-    /* Adjust as per your desired size */
+    width: 130px; /* Adjust as per your desired size */
+    height: 130px; /* Make sure width and height are equal */
     min-width: 80px;
-    /* Make sure width and height are equal */
+    min-height: 80px;
     cursor: pointer;
     border-radius: 50%;
-    /* This makes the image circular */
-    object-fit: fill;
+    object-fit: cover;
 }
 
 .explore-menu-list-item p {
@@ -56,4 +55,9 @@
     height: 2px;
     background-color: #e2e2e2;
     border: none;
+}
+
+.explore-menu-list-item .active{
+    border: 4px solid tomato;
+    padding: 2px;
 }
