@@ -2,6 +2,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -13,9 +14,9 @@ a {
   color: inherit;
 }
 
-.app{
+.app {
   width: 80%;
- margin: auto;
+  margin: auto;
 }
 
 @keyframes fadeIn {

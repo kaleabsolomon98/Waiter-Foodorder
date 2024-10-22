@@ -46,15 +46,15 @@
     border-bottom: 2px solid #49557e;
 }
 
-.navbar li{
+.navbar li {
     cursor: pointer;
 }
 
-.navbar-search-icon{
+.navbar-search-icon {
     position: relative;
 }
 
-.navbar-search-icon .dot{
+.navbar-search-icon .dot {
     position: absolute;
     min-width: 10px;
     min-height: 10px;
@@ -63,4 +63,34 @@
     top: -8px;
     right: -8px;
 
+}
+
+@media(max-width:900px) {
+    .navbar .logo {
+        width: 120px;
+    }
+
+    .navbar-menu {
+        gap: 15px;
+        font-size: 16px;
+    }
+
+    .navbar-right {
+        gap: 20px;
+    }
+
+    .navbar-right img {
+        width: 20px;
+    }
+
+    .navbar-right button {
+        padding: 7px 20px;
+        font-size: 15px;
+    }
+}
+
+@media(max-width:750px) {
+    .navbar-menu {
+        display: none;
+    }
 }
