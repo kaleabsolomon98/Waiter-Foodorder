@@ -18,6 +18,11 @@ a {
   margin: auto;
 }
 
+.full-width {
+  width: 100%;
+  /* Full width when not logged in */
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;

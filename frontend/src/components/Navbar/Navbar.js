@@ -13,7 +13,7 @@ const Navbar = () => {
     <div className='navbar'>
       <img src={assets.logo} alt="" className="logo"></img>
       <ul className='navbar-menu'>
-        <Link to='/' onClick={() => setMenu('home')} className={menu === 'home' ? 'active' : ''} >home</Link>
+        <Link to='/home' onClick={() => setMenu('home')} className={menu === 'home' ? 'active' : ''} >home</Link>
         <a href='#explore-menu' onClick={() => setMenu('menu')} className={menu === 'menu' ? 'active' : ''} >Menu</a>
         <li onClick={() => setMenu('mobile-app')} className={menu === 'mobile-app' ? 'active' : ''} >mobile-app</li>
         <li onClick={() => setMenu('contact us')} className={menu === 'contact us' ? 'active' : ''} >contact-us</li>
