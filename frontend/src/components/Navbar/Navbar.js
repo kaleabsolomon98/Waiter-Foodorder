@@ -18,8 +18,6 @@ const Navbar = () => {
         <Link to='/category' onClick={() => setMenu('category')} className={menu === 'category' ? 'active' : ''} >Category</Link>
         <Link to='/sub-category' onClick={() => setMenu('subCategory')} className={menu === 'subCategory' ? 'active' : ''} >Sub Category</Link>
         <Link to='/menu' onClick={() => setMenu('addMenu')} className={menu === 'addMenu' ? 'active' : ''} >Add Menu</Link>
-        {/* <li onClick={() => setMenu('mobile-app')} className={menu === 'mobile-app' ? 'active' : ''} >mobile-app</li>
-        <li onClick={() => setMenu('contact us')} className={menu === 'contact us' ? 'active' : ''} >contact-us</li> */}
       </ul>
       <div className="navbar-right">
         <img src={assets.search_icon} alt="" />
@@ -27,7 +25,7 @@ const Navbar = () => {
           <img src={assets.basket_icon} alt='' />
           <div className='dot'></div>
         </div>
-        <button>Sign In</button>
+        <button>Sign Out</button>
       </div>
     </div>
   )
