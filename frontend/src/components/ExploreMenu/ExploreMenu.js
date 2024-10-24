@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import './ExploreMenu.css'
-import { food_list, menu_list } from '../../assets/frontend_assets/assets'
+import { food_list, menu_list, Salad, Sandwich, Rolls, Deserts, } from '../../assets/frontend_assets/assets'
 
 const ExploreMenu = ({ category, setCategory }) => {
 
@@ -19,7 +19,7 @@ const ExploreMenu = ({ category, setCategory }) => {
                             onClick={() => setCategory(prev => prev === item.menu_name ? 'All' : item.menu_name)}
                             key={index}
                             className='explore-menu-list-item'
-                            >
+                        >
                             <img
                                 className={category === item.menu_name ? 'active' : ''}
                                 src={item.menu_image}
@@ -31,6 +31,32 @@ const ExploreMenu = ({ category, setCategory }) => {
                 })}
             </div>
             <hr />
+
+            {category !== 'All' && (
+                <div>
+                    <h2>sub menu</h2>
+                    <div className='explore-menu-list'>
+                        {Salad.map((item, index) => {
+                            // Add the missing return here
+                            return (
+                                <div
+                                    onClick={() => setCategory(prev => prev === item.menu_name ? 'All' : item.menu_name)}
+                                    key={index}
+                                    className='explore-menu-list-item'
+                                >
+                                    <img
+                                        className={category === item.menu_name ? 'active' : ''}
+                                        src={item.menu_image}
+                                        alt={item.menu_name}
+                                    />
+                                    <p>{item.menu_name}</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <hr />
+                </div>
+            )}
         </div>
     )
 }

@@ -43,14 +43,16 @@
     gap: 20px;
 }
 
-.cart-total-detailes {
+.cart-total-details {
     display: flex;
     justify-content: space-between;
     color: #555;
+    width: max(15vw, 200px);
 }
 
 .cart-total hr {
     margin: 10px 0px;
+    width: max(15vw, 200px);
 }
 
 .cart-total button {

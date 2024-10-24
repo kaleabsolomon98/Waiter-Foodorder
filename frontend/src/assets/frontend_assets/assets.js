@@ -116,6 +116,90 @@ export const menu_list = [
         menu_image: menu_8
     }]
 
+
+export const Salad = [
+    {
+        menu_name: "Salad",
+        menu_image: menu_1
+    },
+    {
+        menu_name: "Salad1",
+        menu_image: menu_2
+    },
+    {
+        menu_name: "Salad2",
+        menu_image: menu_3
+    },
+    {
+        menu_name: "Salad3",
+        menu_image: menu_4
+    },
+]
+
+export const Rolls = [
+    {
+        menu_name: "Rolls",
+        menu_image: menu_1
+    },
+    {
+        menu_name: "Rolls1",
+        menu_image: menu_2
+    },
+    {
+        menu_name: "Rolls2",
+        menu_image: menu_3
+    },
+]
+
+export const Deserts = [
+    {
+        menu_name: "Deserts",
+        menu_image: menu_1
+    },
+    {
+        menu_name: "Deserts1",
+        menu_image: menu_2
+    },
+    {
+        menu_name: "Deserts2",
+        menu_image: menu_3
+    },
+    {
+        menu_name: "Deserts3",
+        menu_image: menu_4
+    },
+    {
+        menu_name: "Deserts4",
+        menu_image: menu_5
+    },
+]
+
+export const Sandwich = [
+    {
+        menu_name: "Sandwich",
+        menu_image: menu_1
+    },
+    {
+        menu_name: "Sandwich1",
+        menu_image: menu_4
+    },
+]
+
+export const Cake = [
+    {
+        menu_name: "Cake1",
+        menu_image: menu_1
+    },
+    {
+        menu_name: "Cake2",
+        menu_image: menu_4
+    },
+    {
+        menu_name: "Cake3",
+        menu_image: menu_4
+    },
+]
+
 export const food_list = [
     {
         _id: "1",
