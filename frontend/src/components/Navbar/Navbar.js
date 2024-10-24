@@ -31,7 +31,7 @@ const Navbar = () => {
           <img src={assets.basket_icon} alt='' />
           <div className={getTotalCartAmount() === 0 ? '' : 'dot'}></div>
         </div>
-        <button>Sign Out</button>
+        <button onClick={() => navigate('/', { replace: true })}>Sign Out</button>
       </div>
     </div>
   )
