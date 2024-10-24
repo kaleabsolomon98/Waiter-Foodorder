@@ -9,6 +9,7 @@ import { StoreContext } from './context/StoreContext';
 import './App.css';
 import MenuRegistration from './pages/MenuRegistration/MenuRegistration';
 import SubCategory from './pages/SubCategory/SubCategory';
+import Category from './pages/Category/Category';
 
 const App = () => {
   const { isLoggedIn } = useContext(StoreContext);
@@ -22,6 +23,7 @@ const App = () => {
         {/* Ensure that home and other routes are accessible only if not logged in */}
         <Route path='/home' element={isLoggedIn ? <Home /> : <Navigate to="/" replace />} />
         <Route path='/menu' element={isLoggedIn ? <MenuRegistration /> : <Navigate to="/" replace />} />
+        <Route path='/category' element={isLoggedIn ? <Category /> : <Navigate to="/" replace />} />
         <Route path='/subcategory' element={isLoggedIn ? <SubCategory /> : <Navigate to="/" replace />} />
         <Route path='/cart' element={isLoggedIn ? <Cart /> : <Navigate to="/" replace />} />
         <Route path='/order' element={isLoggedIn ? <Placeorder /> : <Navigate to="/" replace />} />

@@ -225,7 +225,6 @@ const SubCategory = () => {
                                     onChange={(e) => setNewSubCategory({ ...newSubCategory, image: e.target.value })}
                                 />
                             </div>
-
                             <button type="submit" className={styles['submit-btn']}>
                                 {loading ? <CircularProgress size={24} /> : (editingSubCategory ? 'Update Sub Category' : 'Add Sub Category')}
                             </button>

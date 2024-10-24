@@ -2,52 +2,47 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import styles from './SubCategory.module.css';
+import styles from './Category.module.css'
 
 const Category = () => {
     const [categories, setCategory] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingSubCategory, setEditingSubCategory] = useState(null);
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [newCategory, setNewCategory] = useState({ name: '', category_id: '', description: '', image: '' });
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                // Set your categories data here
-                setCategories(
+                setCategory(
                     [
                         {
                             "id": 1,
                             "category": "Food",
-                            "subcategory": "Vegetables",
                             "description": "Fresh and organic vegetables.",
                             "image": "https://example.com/images/vegetables.jpg"
                         },
                         {
                             "id": 2,
                             "category": "Food",
-                            "subcategory": "Fruits",
                             "description": "Juicy and fresh fruits.",
                             "image": "https://example.com/images/fruits.jpg"
                         },
                         {
                             "id": 3,
                             "category": "Dairy",
-                            "subcategory": "Milk",
                             "description": "Fresh dairy products including milk and cheese.",
                             "image": "https://example.com/images/milk.jpg"
                         },
                         {
                             "id": 4,
                             "category": "Snacks",
-                            "subcategory": "Chips",
                             "description": "Various types of crunchy chips.",
                             "image": "https://example.com/images/chips.jpg"
                         },
                         {
                             "id": 5,
                             "category": "Beverages",
-                            "subcategory": "Juices",
                             "description": "Natural fruit juices.",
                             "image": "https://example.com/images/juices.jpg"
                         }
@@ -58,36 +53,24 @@ const Category = () => {
             }
         };
 
-        // const fetchSubCategories = async () => {
-        //     setLoading(true);
-        //     try {
-        //         // Fetch your subcategories data here
-        //     } catch (error) {
-        //         console.error('Error fetching subcategories:', error);
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
 
         fetchCategories();
-        // fetchSubCategories();
     }, []);
 
-    const openModal = (subCategory = null) => {
-        if (subCategory) {
-            setEditingSubCategory(subCategory);
-            setCategory({ subcategory: subCategory.subcategory, category_id: subCategory.category_id, description: subCategory.description, image: subCategory.image });
+    const openModal = (category = null) => {
+        if (category) {
+            setEditingCategory(category);
+            setNewCategory({ category_id: category.id, category: category.category, description: category.description, image: category.image });
         } else {
-            setEditingSubCategory(null);
-            setCategory({ name: '', category_id: '', description: '', image: '' });
+            setEditingCategory(null);
+            setNewCategory({ name: '', category_id: '', description: '', image: '' });
         }
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setNewSubCategory({ name: '', category_id: '', description: '', image: '' });
-        setEditingSubCategory(null);
+        setEditingCategory(null);
     };
 
     const handleSubmit = async (e) => {
@@ -95,14 +78,14 @@ const Category = () => {
         setLoading(true);
 
         try {
-            if (editingSubCategory) {
-                await axios.put(`https://hotel.samesoft.app/subcategories/${editingSubCategory.id}`, newSubCategory);
-                setSubCategories(subCategories.map(item =>
-                    item.id === editingSubCategory.id ? { ...item, ...newSubCategory } : item
+            if (editingCategory) {
+                await axios.put(`https://hotel.samesoft.app/subcategories/${editingCategory.id}`, categories);
+                setCategory(Category.map(item =>
+                    item.id === editingCategory.id ? { ...item, ...categories } : item
                 ));
             } else {
-                const response = await axios.post('https://hotel.samesoft.app/subcategories', newSubCategory);
-                setSubCategories([...subCategories, response.data]);
+                const response = await axios.post('https://hotel.samesoft.app/subcategories', categories);
+                setCategory([...categories, response.data]);
             }
             closeModal();
         } catch (error) {
@@ -116,7 +99,7 @@ const Category = () => {
         setLoading(true);
         try {
             await axios.delete(`https://hotel.samesoft.app/subcategories/${id}`);
-            setSubCategories(subCategories.filter(item => item.id !== id));
+            setCategory(Category.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting subcategory:', error);
         } finally {
@@ -126,15 +109,15 @@ const Category = () => {
 
     return (
         <div className={styles.container}>
-            <h2>Manage Subcategories</h2>
+            <h2>Manage Categories</h2>
 
             <button className={styles['add-btn-category']} onClick={() => openModal()}>
-                <FaPlus /> Add New Sub Category
+                <FaPlus /> Add New Category
             </button>
 
             {loading ? (
                 null
-                // <CircularProgress />
+
             ) : (
                 <table className={styles.table}>
                     <thead>
@@ -171,32 +154,28 @@ const Category = () => {
                 <div className={styles.modal}>
                     <div className={styles['modal-content']}>
                         <div className={styles['modal-header']}>
-                            <h2>{editingSubCategory ? 'Edit Sub Category' : 'Add New Subcategory'}</h2>
+                            <h2>{editingCategory ? 'Edit Category' : 'Add New Category'}</h2>
                             <span className={styles.close} onClick={closeModal}>&times;</span>
                         </div>
                         <form onSubmit={handleSubmit} className={styles['form-layout']}>
                             <div className={styles.field}>
                                 <label>Category</label>
-                                <select
-                                    value={newCategory.category_id}
-                                    onChange={(e) => setNewCategory({ ...newCategory, category_id: e.target.value })}
+                                <input
+                                    type='text'
+                                    placeholder="Enter Description"
+                                    value={newCategory.category}
+                                    onChange={(e) => setNewCategory({ ...newCategory, category: e.target.value })}
                                     required
-                                >
-                                    <option value="" disabled>Select Category</option>
-                                    {categories.map(category => (
-                                        <option key={category.id} value={category.id}>{category.category}</option>
-                                    ))}
-                                </select>
+                                />
+
                             </div>
-
-
                             <div className={styles.field}>
                                 <label>Description</label>
                                 <input
                                     type='text'
                                     placeholder="Enter Description"
-                                    value={newSubCategory.description}
-                                    onChange={(e) => setNewCategory({ ...newSubCategory, description: e.target.value })}
+                                    value={newCategory.description}
+                                    onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
                                     required
                                 />
                             </div>
@@ -207,11 +186,11 @@ const Category = () => {
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => setNewCategory({ ...newSubCategory, image: e.target.value })}
+                                    onChange={(e) => setNewCategory({ ...newCategory, image: e.target.value })}
                                 />
                             </div>
                             <button type="submit" className={styles['submit-btn']}>
-                                {loading ? <CircularProgress size={24} /> : (editingSubCategory ? 'Update Sub Category' : 'Add Sub Category')}
+                                {loading ? <CircularProgress size={24} /> : (editingCategory ? 'Update Category' : 'Add Category')}
                             </button>
                         </form>
                     </div>
@@ -222,3 +201,4 @@ const Category = () => {
 };
 
 export default Category;
+
