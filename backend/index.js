@@ -116,12 +116,20 @@ app.post('/categories', upload.single('image'), async (req, res) => {
 app.get('/categories', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM category');
-        res.json(result.rows);
+
+        // Map through each row and prepend the full URL for the image
+        const categoriesWithImageURLs = result.rows.map(category => ({
+            ...category,
+            image: category.image ? `${req.protocol}://${req.get('host')}/uploads/${category.image}` : null // If image exists, build the full URL
+        }));
+
+        res.status(200).json(categoriesWithImageURLs); // Return the categories with full image URLs
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 app.put('/categories/:id', async (req, res) => {
     const id = req.params.id;
