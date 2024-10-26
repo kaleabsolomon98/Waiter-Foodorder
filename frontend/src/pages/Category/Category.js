@@ -2,38 +2,35 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import styles from './Category.module.css'
+import styles from './Category.module.css';
 
 const Category = () => {
-    const [categories, setCategory] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [loadingEditId, setLoadingEditId] = useState(null); // Tracks loading state for edit actions
+    const [loadingDeleteId, setLoadingDeleteId] = useState(null); // Tracks loading state for delete actions
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
-    const [newCategory, setNewCategory] = useState({ name: '', category_id: '', description: '', image: '' });
+    const [newCategory, setNewCategory] = useState({ name: '', description: '', image: null });
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const response = await axios.get('http://localhost:4422/categories');
-                console.log("-----PRINTING CATEGORY---------");
-                console.log(response);
-                setCategory(response.data);
+                setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         };
-
-
         fetchCategories();
     }, []);
 
     const openModal = (category = null) => {
         if (category) {
             setEditingCategory(category);
-            setNewCategory({ category_id: category.id, category: category.category, description: category.description, image: category.image });
+            setNewCategory({ name: category.name, description: category.description, image: category.image });
         } else {
             setEditingCategory(null);
-            setNewCategory({ name: '', category_id: '', description: '', image: '' });
+            setNewCategory({ name: '', description: '', image: null });
         }
         setIsModalOpen(true);
     };
@@ -43,81 +40,111 @@ const Category = () => {
         setEditingCategory(null);
     };
 
+    const handleFileChange = (e) => {
+        setNewCategory({ ...newCategory, image: e.target.files[0] });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setLoadingEditId(editingCategory ? editingCategory.id : 'new');
+
+        const formData = new FormData();
+        formData.append('name', newCategory.name);
+        formData.append('description', newCategory.description);
+        if (newCategory.image) formData.append('image', newCategory.image);
+        
         try {
             if (editingCategory) {
-                await axios.put(`https://hotel.samesoft.app/subcategories/${editingCategory.id}`, newCategory);
-                setCategory(Category.map(item =>
-                    item.id === editingCategory.id ? { ...item, ...categories } : item
+                const response = await axios.put(`http://localhost:4422/categories/${editingCategory.id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                setCategories(categories.map((item) =>
+                    item.id === editingCategory.id ? response.data : item
                 ));
             } else {
-                const response = await axios.post('http://localhost:4422/categories', newCategory);
-                setCategory([...categories, response.data]);
+                const response = await axios.post('http://localhost:4422/categories', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                setCategories([...categories, response.data]);
             }
             closeModal();
         } catch (error) {
-            console.error('Error saving subcategory:', error);
+            console.error('Error saving category:', error);
         } finally {
-            setLoading(false);
+            setLoadingEditId(null);
         }
     };
 
     const handleDelete = async (id) => {
-        setLoading(true);
+        setLoadingDeleteId(id);
         try {
-            await axios.delete(`https://hotel.samesoft.app/subcategories/${id}`);
-            setCategory(Category.filter(item => item.id !== id));
+            await axios.delete(`http://localhost:4422/categories/${id}`);
+            setCategories(categories.filter(item => item.id !== id));
         } catch (error) {
-            console.error('Error deleting subcategory:', error);
+            console.error('Error deleting category:', error);
         } finally {
-            setLoading(false);
+            setLoadingDeleteId(null);
         }
     };
 
     return (
         <div className={styles.container}>
             <h2>Manage Categories</h2>
-
             <button className={styles['add-btn-category']} onClick={() => openModal()}>
                 <FaPlus /> Add New Category
             </button>
 
-            {loading ? (
-                null
-
-            ) : (
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Image</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {categories.map((item) => (
-                            <tr key={item.id}>
-                                <td>{item.name}</td>
-                                <td>{item.description}</td>
-                                <td>
-                                    {item.image && <img src={item.image} alt={item.name} style={{ width: '50px', height: '50px' }} />}
-                                </td>
-                                <td className={styles.actions}>
-                                    <button className={styles['edit-btn']} onClick={() => openModal(item)}>
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {categories.map((item) => (
+                        <tr key={item.id}>
+                            <td>{item.name}</td>
+                            <td>{item.description}</td>
+                            <td>
+                                {item.image && (
+                                    <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        style={{ width: '50px', height: '50px' }}
+                                    />
+                                )}
+                            </td>
+                            <td className={styles.actions}>
+                                <button
+                                    className={styles['edit-btn']}
+                                    onClick={() => openModal(item)}
+                                    disabled={loadingDeleteId === item.id}
+                                >
+                                    {loadingEditId === item.id ? (
+                                        <CircularProgress size={20} />
+                                    ) : (
                                         <FaEdit />
-                                    </button>
-                                    <button className={styles['delete-btn']} onClick={() => handleDelete(item.id)}>
+                                    )}
+                                </button>
+                                <button
+                                    className={styles['delete-btn']}
+                                    onClick={() => handleDelete(item.id)}
+                                    disabled={loadingEditId === item.id}
+                                >
+                                    {loadingDeleteId === item.id ? (
+                                        <CircularProgress size={20} />
+                                    ) : (
                                         <FaTrash />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                                    )}
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
 
             {isModalOpen && (
                 <div className={styles.modal}>
@@ -131,12 +158,11 @@ const Category = () => {
                                 <label>Category</label>
                                 <input
                                     type='text'
-                                    placeholder="Enter Description"
-                                    value={newCategory.category}
+                                    placeholder="Enter Category Name"
+                                    value={newCategory.name}
                                     onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                                     required
                                 />
-
                             </div>
                             <div className={styles.field}>
                                 <label>Description</label>
@@ -148,18 +174,20 @@ const Category = () => {
                                     required
                                 />
                             </div>
-
-                            {/* Image Upload */}
                             <div className={styles.field}>
                                 <label>Image</label>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => setNewCategory({ ...newCategory, image: e.target.value })}
+                                    onChange={handleFileChange}
                                 />
                             </div>
                             <button type="submit" className={styles['submit-btn']}>
-                                {loading ? <CircularProgress size={24} /> : (editingCategory ? 'Update Category' : 'Add Category')}
+                                {loadingEditId === 'new' || loadingEditId === editingCategory?.id ? (
+                                    <CircularProgress size={24} />
+                                ) : (
+                                    editingCategory ? 'Update Category' : 'Add Category'
+                                )}
                             </button>
                         </form>
                     </div>
@@ -170,4 +198,3 @@ const Category = () => {
 };
 
 export default Category;
-

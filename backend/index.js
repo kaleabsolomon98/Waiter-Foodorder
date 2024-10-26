@@ -34,18 +34,6 @@ const JWT_SECRET = 'c09a42022c2b32fc1094cfbb16b156ffc814e2f9aa29fca39ecaff101b1d
 var tokens;
 
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Store images in the 'uploads' folder
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to avoid filename conflicts
-    },
-});
-
-const upload = multer({ storage });
-
-
 // Login Route
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -88,21 +76,26 @@ app.get('/table-prices', async (req, res) => {
     res.json(result.rows);
 });
 
-app.get('/categories', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM category');
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching categories:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Store images in the 'uploads' folder
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to avoid filename conflicts
+    },
 });
 
+const upload = multer({ storage });
+
 app.post('/categories', upload.single('image'), async (req, res) => {
-    const { name, description, image } = req.body;
+    const { name, description } = req.body;
+    const image = req.file ? req.file.filename : null; // Get the filename from req.file if it exists
+
     try {
         const result = await pool.query(
-            'INSERT INTO category (name, description,image) VALUES ($1, $2,$3) RETURNING *',
+            'INSERT INTO category (name, description, image) VALUES ($1, $2, $3) RETURNING *',
             [name, description, image]
         );
         console.log(result);
@@ -113,10 +106,12 @@ app.post('/categories', upload.single('image'), async (req, res) => {
     }
 });
 
+
 app.get('/categories', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM category');
-
+        console.log("----CHECKING HOSTING--------");
+        console.log(req.get('host'));
         // Map through each row and prepend the full URL for the image
         const categoriesWithImageURLs = result.rows.map(category => ({
             ...category,
