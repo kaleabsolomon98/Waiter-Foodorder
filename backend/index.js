@@ -98,8 +98,12 @@ app.post('/categories', upload.single('image'), async (req, res) => {
             'INSERT INTO category (name, description, image) VALUES ($1, $2, $3) RETURNING *',
             [name, description, image]
         );
-        console.log(result);
-        res.status(201).json(result.rows[0]); // Return the newly created category with its ID
+
+        // Construct the image URL if the image exists
+        const imageUrl = image ? `${req.protocol}://${req.get('host')}/uploads/${image}` : null;
+
+        // Return the newly created category with the image URL
+        res.status(201).json({ ...result.rows[0], imageUrl });
     } catch (error) {
         console.error('Error creating category:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -107,11 +111,10 @@ app.post('/categories', upload.single('image'), async (req, res) => {
 });
 
 
+
 app.get('/categories', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM category');
-        console.log("----CHECKING HOSTING--------");
-        console.log(req.get('host'));
         // Map through each row and prepend the full URL for the image
         const categoriesWithImageURLs = result.rows.map(category => ({
             ...category,
@@ -126,27 +129,45 @@ app.get('/categories', async (req, res) => {
 });
 
 
-app.put('/categories/:id', async (req, res) => {
-    const id = req.params.id;
-    const { name, description, image } = req.body;
+app.put('/categories/:id', upload.single('image'), async (req, res) => {
+    const id = req.params.id; // Get the ID from the request parameters
+    const { name, description } = req.body; // Extract other fields from the request body
+    const image = req.file ? req.file.filename : null; // Get the image filename if it exists
 
     try {
-        const result = await pool.query(
-            'UPDATE category SET name = $1, description = $2 WHERE id = $3',
-            [name, description, id]
-        );
+        // Start building the update query
+        let query = `UPDATE category SET name = $1, description = $2`;
+        const queryParams = [name, description];
+
+        // If an image is provided, include it in the query
+        if (image) {
+            query += `, image = $3 WHERE id = $4`;
+            queryParams.push(image, id);
+        } else {
+            // If no image is provided, do not update the image field
+            query += ` WHERE id = $3`;
+            queryParams.push(id);
+        }
+
+        // Execute the update query
+        const result = await pool.query(query, queryParams);
+
         // Check if any row was affected
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Category not found' });
         }
 
-        // If the update is successful, respond with a success message
-        res.json({ message: 'Category updated successfully' });
+        // Fetch the updated category from the database to return in the response
+        const updatedCategory = await pool.query('SELECT * FROM category WHERE id = $1', [id]);
+        res.status(200).json(updatedCategory.rows[0]);
+
     } catch (error) {
         console.error('Error updating category:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+
 
 app.delete('/categories/:id', async (req, res) => {
     const id = req.params.id; // Get the ID from the request parameters
