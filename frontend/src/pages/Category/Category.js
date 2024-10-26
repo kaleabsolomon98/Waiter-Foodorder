@@ -14,40 +14,10 @@ const Category = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                setCategory(
-                    [
-                        {
-                            "id": 1,
-                            "category": "Food",
-                            "description": "Fresh and organic vegetables.",
-                            "image": "https://example.com/images/vegetables.jpg"
-                        },
-                        {
-                            "id": 2,
-                            "category": "Food",
-                            "description": "Juicy and fresh fruits.",
-                            "image": "https://example.com/images/fruits.jpg"
-                        },
-                        {
-                            "id": 3,
-                            "category": "Dairy",
-                            "description": "Fresh dairy products including milk and cheese.",
-                            "image": "https://example.com/images/milk.jpg"
-                        },
-                        {
-                            "id": 4,
-                            "category": "Snacks",
-                            "description": "Various types of crunchy chips.",
-                            "image": "https://example.com/images/chips.jpg"
-                        },
-                        {
-                            "id": 5,
-                            "category": "Beverages",
-                            "description": "Natural fruit juices.",
-                            "image": "https://example.com/images/juices.jpg"
-                        }
-                    ]
-                );
+                const response = await axios.get('http://localhost:4422/categories');
+                console.log("-----PRINTING CATEGORY---------");
+                console.log(response);
+                setCategory(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
@@ -76,15 +46,14 @@ const Category = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
             if (editingCategory) {
-                await axios.put(`https://hotel.samesoft.app/subcategories/${editingCategory.id}`, categories);
+                await axios.put(`https://hotel.samesoft.app/subcategories/${editingCategory.id}`, newCategory);
                 setCategory(Category.map(item =>
                     item.id === editingCategory.id ? { ...item, ...categories } : item
                 ));
             } else {
-                const response = await axios.post('https://hotel.samesoft.app/subcategories', categories);
+                const response = await axios.post('http://localhost:4422/categories', newCategory);
                 setCategory([...categories, response.data]);
             }
             closeModal();
@@ -131,7 +100,7 @@ const Category = () => {
                     <tbody>
                         {categories.map((item) => (
                             <tr key={item.id}>
-                                <td>{item.category}</td>
+                                <td>{item.name}</td>
                                 <td>{item.description}</td>
                                 <td>
                                     {item.image && <img src={item.image} alt={item.name} style={{ width: '50px', height: '50px' }} />}
@@ -164,7 +133,7 @@ const Category = () => {
                                     type='text'
                                     placeholder="Enter Description"
                                     value={newCategory.category}
-                                    onChange={(e) => setNewCategory({ ...newCategory, category: e.target.value })}
+                                    onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                                     required
                                 />
 

@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 const pool = new Pool({
     user: 'postgres',
     host: '128.199.144.65',
-    database: 'hotel',
+    database: 'foodorder',
     password: 'openpgpwd',
     port: 5432,
     max: 200, // Maximum number of connections
@@ -32,6 +32,19 @@ const pool = new Pool({
 const JWT_SECRET = 'c09a42022c2b32fc1094cfbb16b156ffc814e2f9aa29fca39ecaff101b1d5731';
 
 var tokens;
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Store images in the 'uploads' folder
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to avoid filename conflicts
+    },
+});
+
+const upload = multer({ storage });
+
 
 // Login Route
 app.post('/login', async (req, res) => {
@@ -85,7 +98,7 @@ app.get('/categories', async (req, res) => {
     }
 });
 
-app.post('/categories', async (req, res) => {
+app.post('/categories', upload.single('image'), async (req, res) => {
     const { name, description, image } = req.body;
     try {
         const result = await pool.query(
@@ -100,9 +113,19 @@ app.post('/categories', async (req, res) => {
     }
 });
 
+app.get('/categories', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM category');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.put('/categories/:id', async (req, res) => {
     const id = req.params.id;
-    const { name, description } = req.body;
+    const { name, description, image } = req.body;
 
     try {
         const result = await pool.query(
@@ -143,17 +166,6 @@ app.delete('/categories/:id', async (req, res) => {
     }
 });
 
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Store images in the 'uploads' folder
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to avoid filename conflicts
-    },
-});
-
-const upload = multer({ storage });
 
 // Create a new menu item with image upload
 app.post('/menus', upload.single('image'), async (req, res) => {
@@ -396,13 +408,6 @@ async function getDeviceTokens() {
     }
 }
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use your email service provider
-    auth: {
-        user: 'your-email@gmail.com',
-        pass: 'your-email-password',
-    },
-});
 
 app.post('/send-email', async (req, res) => {
     const { email, subject, message } = req.body;
