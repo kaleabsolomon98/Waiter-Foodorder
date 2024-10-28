@@ -10,10 +10,11 @@ const MenuRegistration = () => {
     const [subCategories, setSubCategories] = useState([]);
     const [editingMenuItem, setEditingMenuItem] = useState(null);
     const [newMenuItem, setNewMenuItem] = useState({
-        name: '', price: '', category_id: '', subCategory_id: '', image: null, printerName: '', isFridge: 'no'
+        name: '', price: '', category_id: '', subcategory_id: '', image: null, printerName: '', isFridge: 'no'
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -28,6 +29,7 @@ const MenuRegistration = () => {
         const fetchMenuItems = async () => {
             try {
                 const response = await axios.get('http://localhost:4422/menus');
+                console.log(response.data);
                 setMenuItems(response.data);
             } catch (error) {
                 console.error('Error fetching menu items:', error);
@@ -38,25 +40,56 @@ const MenuRegistration = () => {
         fetchMenuItems();
     }, []);
 
-    const openModal = (item = null) => {
+    const openModal = async (item = null) => {
         if (item) {
             setEditingMenuItem(item);
             setNewMenuItem({
-                name: item.name, price: item.price, category_id: item.category_id, subCategory_id: item.subCategory_id, image: null, printerName: item.printerName, isFridge: item.isFridge
+                name: item.name,
+                price: item.price,
+                category_id: item.category_id,
+                subcategory_id: item.subcategory_id,
+                image: null,
+                printerName: item.printerName,
+                isFridge: item.isFridge
             });
+
+            // Fetch subcategories for the selected category
+            await fetchSubCategories(item.category_id);
         } else {
             setEditingMenuItem(null);
             setNewMenuItem({
-                name: '', price: '', category_id: '', subCategory_id: '', image: null, printerName: '', isFridge: 'no'
+                name: '',
+                price: '',
+                category_id: '',
+                subcategory_id: '',
+                image: null,
+                printerName: '',
+                isFridge: 'no'
             });
         }
         setIsModalOpen(true);
     };
 
+
+    // const openModal = (item = null) => {
+    //     if (item) {
+    //         setEditingMenuItem(item);
+    //         setNewMenuItem({
+    //             name: item.name, price: item.price, category_id: item.category_id, subcategory_id: item.subcategory_id, image: null, printerName: item.printerName, isFridge: item.isFridge
+    //         });
+    //     } else {
+    //         setEditingMenuItem(null);
+    //         setNewMenuItem({
+    //             name: '', price: '', category_id: '', subcategory_id: '', image: null, printerName: '', isFridge: 'no'
+    //         });
+    //     }
+    //     setIsModalOpen(true);
+    // };
+
     const closeModal = () => {
         setIsModalOpen(false);
         setNewMenuItem({
-            name: '', price: '', category_id: '', subCategory_id: '', image: null, printerName: '', isFridge: 'no'
+            name: '', price: '', category_id: '', subcategory_id: '', image: null, printerName: '', isFridge: 'no'
         });
         setEditingMenuItem(null);
     };
@@ -73,19 +106,21 @@ const MenuRegistration = () => {
         formData.append('name', newMenuItem.name);
         formData.append('price', newMenuItem.price);
         formData.append('category_id', newMenuItem.category_id);
-        formData.append('subCategory_id', newMenuItem.subCategory_id);
+        formData.append('subcategory_id', newMenuItem.subcategory_id);
         formData.append('printerName', newMenuItem.printerName);
         formData.append('isFridge', newMenuItem.isFridge);
         formData.append('image', newMenuItem.image ? newMenuItem.image : editingMenuItem.image);
 
         try {
             if (editingMenuItem) {
-                await axios.put(`http://localhost:4422/menus/${editingMenuItem.id}`, formData, {
+                const response = await axios.put(`http://localhost:4422/menus/${editingMenuItem.id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
 
+                // Replace the edited item in menuItems with the response data
+                const updatedItem = response.data;
                 setMenuItems(menuItems.map(item =>
-                    item.id === editingMenuItem.id ? { ...item, ...newMenuItem, image: newMenuItem.image ? URL.createObjectURL(newMenuItem.image) : item.image } : item
+                    item.id === editingMenuItem.id ? { ...item, ...updatedItem } : item
                 ));
             } else {
                 const response = await axios.post('http://localhost:4422/menus', formData, {
@@ -93,6 +128,7 @@ const MenuRegistration = () => {
                 });
                 setMenuItems([...menuItems, response.data]);
             }
+
             closeModal();
         } catch (error) {
             console.error('Error saving menu item:', error);
@@ -101,15 +137,17 @@ const MenuRegistration = () => {
         }
     };
 
+
+
     const handleDelete = async (id) => {
-        setLoading(true);
+        setDeletingId(id);
         try {
             await axios.delete(`http://localhost:4422/menus/${id}`);
             setMenuItems(menuItems.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting menu item:', error);
         } finally {
-            setLoading(false);
+            setDeletingId(null);
         }
     };
 
@@ -124,7 +162,7 @@ const MenuRegistration = () => {
 
     const handleCategoryChange = async (e) => {
         const categoryId = e.target.value;
-        setNewMenuItem({ ...newMenuItem, category_id: categoryId, subCategory_id: '' });
+        setNewMenuItem({ ...newMenuItem, category_id: categoryId, subcategory_id: '' });
         await fetchSubCategories(categoryId);
     };
 
@@ -153,9 +191,9 @@ const MenuRegistration = () => {
                     {menuItems.map((item) => (
                         <tr key={item.id}>
                             <td>{item.printerName}</td>
-                            <td>{item.isFridge}</td>
-                            <td>{item.category?.name}</td>
-                            <td>{item.subCategory?.name}</td>
+                            <td>{item.isFridge ? 'Yes' : 'No'}</td>
+                            <td>{item.category}</td>
+                            <td>{item.subCategory}</td>
                             <td>{item.name}</td>
                             <td>${(parseFloat(item.price) || 0).toFixed(2)}</td>
                             <td>
@@ -167,8 +205,16 @@ const MenuRegistration = () => {
                                 <button className={styles['edit-btn']} onClick={() => openModal(item)}>
                                     <FaEdit />
                                 </button>
-                                <button className={styles['delete-btn']} onClick={() => handleDelete(item.id)}>
-                                    <FaTrash />
+                                <button
+                                    className={styles['delete-btn']}
+                                    onClick={() => handleDelete(item.id)}
+                                    disabled={deletingId === item.id}
+                                >
+                                    {deletingId === item.id ? (
+                                        <CircularProgress size={24} />
+                                    ) : (
+                                        <FaTrash />
+                                    )}
                                 </button>
                             </td>
                         </tr>
@@ -201,7 +247,7 @@ const MenuRegistration = () => {
                                         <input
                                             type="radio"
                                             value="yes"
-                                            checked={newMenuItem.isFridge === "yes"}
+                                            checked={newMenuItem.isFridge === "yes" || newMenuItem.isFridge === false}
                                             onChange={() => setNewMenuItem({ ...newMenuItem, isFridge: "yes" })}
                                         />
                                         Yes
@@ -210,13 +256,14 @@ const MenuRegistration = () => {
                                         <input
                                             type="radio"
                                             value="no"
-                                            checked={newMenuItem.isFridge === "no"}
+                                            checked={newMenuItem.isFridge === "no" || newMenuItem === true}
                                             onChange={() => setNewMenuItem({ ...newMenuItem, isFridge: "no" })}
                                         />
                                         No
                                     </label>
                                 </div>
                             </div>
+
                             <div className={styles.field}>
                                 <label>Category</label>
                                 <select
@@ -233,8 +280,8 @@ const MenuRegistration = () => {
                             <div className={styles.field}>
                                 <label>Sub Category</label>
                                 <select
-                                    value={newMenuItem.subCategory_id}
-                                    onChange={(e) => setNewMenuItem({ ...newMenuItem, subCategory_id: e.target.value })}
+                                    value={newMenuItem.subcategory_id}
+                                    onChange={(e) => setNewMenuItem({ ...newMenuItem, subcategory_id: e.target.value })}
                                     required
                                 >
                                     <option value="" disabled>Select Sub Category</option>

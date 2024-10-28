@@ -298,30 +298,70 @@ app.delete('/subcategories/:id', async (req, res) => {
 
 // 1. Create a new menu item
 app.post('/menus', upload.single('image'), async (req, res) => {
-    const { name, price, category_id, subCategory_id, printerName, isFridge } = req.body;
+    const { name, price, category_id, subcategory_id, printerName, isFridge } = req.body;
     const image = req.file ? req.file.filename : null;
+    console.log(req.body);
 
     try {
-        const result = await pool.query(
-            'INSERT INTO menu (name, price, category_id, subCategory_id, printerName, isFridge, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [name, price, category_id, subCategory_id, printerName, isFridge, image]
+        // Insert the new menu item
+        const insertResult = await pool.query(
+            'INSERT INTO menu (name, price, category_id, subcategory_id, "printerName", "isFridge", image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [name, price, category_id, subcategory_id, printerName, isFridge, image]
         );
 
+        const newMenuItem = insertResult.rows[0];
+
+        // Fetch category and subcategory names
+        const categoryQuery = `
+            SELECT 
+                category.name AS category_name,
+                subcategory.name AS subcategory_name
+            FROM category
+            LEFT JOIN subcategory ON subcategory.id = $1
+            WHERE category.id = $2
+        `;
+
+        const categoryResult = await pool.query(categoryQuery, [subcategory_id, category_id]);
+        const categoryData = categoryResult.rows[0];
+
+        // Construct the response
         const imageUrl = image ? `${req.protocol}://${req.get('host')}/uploads/${image}` : null;
-        res.status(201).json({ ...result.rows[0], image: imageUrl });
+        const response = {
+            ...newMenuItem,
+            image: imageUrl,
+            category: categoryData ? categoryData.category_name : null,
+            subCategory: categoryData ? categoryData.subcategory_name : null,
+        };
+
+        res.status(201).json(response);
     } catch (error) {
         console.error('Error creating menu item:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
+
+
 // 2. Retrieve all menu items with image URLs
 app.get('/menus', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM menu');
+        const query = `
+            SELECT 
+                menu.*,
+                category.name AS category_name,
+                subcategory.name AS subcategory_name
+            FROM menu
+            LEFT JOIN category ON menu.category_id = category.id
+            LEFT JOIN subcategory ON menu.subCategory_id = subcategory.id
+        `;
+
+        const result = await pool.query(query);
+
         const menusWithImageURLs = result.rows.map(menu => ({
             ...menu,
-            image: menu.image ? `${req.protocol}://${req.get('host')}/uploads/${menu.image}` : null
+            image: menu.image ? `${req.protocol}://${req.get('host')}/uploads/${menu.image}` : null,
+            category: menu.category_name,
+            subCategory: menu.subcategory_name
         }));
 
         res.status(200).json(menusWithImageURLs);
@@ -330,6 +370,7 @@ app.get('/menus', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // 3. Retrieve menu items by category ID
 app.get('/menus/:categoryId', async (req, res) => {
@@ -380,13 +421,14 @@ app.get('/menus/filtered', async (req, res) => {
 
 // 4. Update an existing menu item
 app.put('/menus/:id', upload.single('image'), async (req, res) => {
+    console.log(req.body);
     const id = req.params.id;
-    const { name, price, category_id, subCategory_id, printerName, isFridge } = req.body;
+    const { name, price, category_id, subcategory_id, printerName, isFridge } = req.body;
     const image = req.file ? req.file.filename : null;
 
     try {
-        let query = `UPDATE menu SET name = $1, price = $2, category_id = $3, subCategory_id = $4, printerName = $5, isFridge = $6`;
-        const queryParams = [name, price, category_id, subCategory_id, printerName, isFridge];
+        let query = `UPDATE menu SET name = $1, price = $2, category_id = $3, subcategory_id = $4, "printerName" = $5, "isFridge" = $6`;
+        const queryParams = [name, price, category_id, subcategory_id, printerName, isFridge];
 
         if (image) {
             query += `, image = $7 WHERE id = $8`;
@@ -396,19 +438,44 @@ app.put('/menus/:id', upload.single('image'), async (req, res) => {
             queryParams.push(id);
         }
 
+        // Execute the update
         const result = await pool.query(query, queryParams);
 
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Menu item not found' });
         }
 
-        const updatedMenu = await pool.query('SELECT * FROM menu WHERE id = $1', [id]);
-        res.status(200).json(updatedMenu.rows[0]);
+        // Fetch the updated menu item along with category and subcategory names
+        const updatedMenuQuery = `
+            SELECT 
+                menu.*,
+                category.name AS category_name,
+                subcategory.name AS subcategory_name
+            FROM menu
+            LEFT JOIN category ON menu.category_id = category.id
+            LEFT JOIN subcategory ON menu.subcategory_id = subcategory.id
+            WHERE menu.id = $1
+        `;
+        const updatedMenuResult = await pool.query(updatedMenuQuery, [id]);
+
+        const updatedMenu = updatedMenuResult.rows[0];
+
+        // Construct image URL
+        const imageUrl = updatedMenu.image ? `${req.protocol}://${req.get('host')}/uploads/${updatedMenu.image}` : null;
+
+        // Send response with updated item and category details
+        res.status(200).json({
+            ...updatedMenu,
+            image: imageUrl,
+            category: updatedMenu.category_name,
+            subCategory: updatedMenu.subcategory_name
+        });
     } catch (error) {
         console.error('Error updating menu item:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // 5. Delete a menu item
 app.delete('/menus/:id', async (req, res) => {
