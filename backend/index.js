@@ -296,374 +296,135 @@ app.delete('/subcategories/:id', async (req, res) => {
 });
 
 
-// Create a new menu item with image upload
+// 1. Create a new menu item
 app.post('/menus', upload.single('image'), async (req, res) => {
-    const { name, description, price, category_id } = req.body;
-    const image = req.file ? req.file.filename : null; // Get the image filename from multer
+    const { name, price, category_id, subCategory_id, printerName, isFridge } = req.body;
+    const image = req.file ? req.file.filename : null;
 
     try {
         const result = await pool.query(
-            'INSERT INTO menus (name, description, price, category_id, image) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [name, description, price, category_id, image]
+            'INSERT INTO menu (name, price, category_id, subCategory_id, printerName, isFridge, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [name, price, category_id, subCategory_id, printerName, isFridge, image]
         );
 
-        res.status(201).json(result.rows[0]); // Return the newly created menu item
+        const imageUrl = image ? `${req.protocol}://${req.get('host')}/uploads/${image}` : null;
+        res.status(201).json({ ...result.rows[0], image: imageUrl });
     } catch (error) {
-        console.error('Error creating menu:', error);
+        console.error('Error creating menu item:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
+// 2. Retrieve all menu items with image URLs
+app.get('/menus', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM menu');
+        const menusWithImageURLs = result.rows.map(menu => ({
+            ...menu,
+            image: menu.image ? `${req.protocol}://${req.get('host')}/uploads/${menu.image}` : null
+        }));
 
-app.put('/menus/:id', upload.single('image'), async (req, res) => {
-    const id = req.params.id; // Get the ID from the request parameters
-    const { name, description, price, category_id } = req.body; // Extract other fields from the request body
-    const image = req.file ? req.file.filename : null; // Get the image filename if it exists
+        res.status(200).json(menusWithImageURLs);
+    } catch (error) {
+        console.error('Error fetching menu items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 3. Retrieve menu items by category ID
+app.get('/menus/:categoryId', async (req, res) => {
+    const { categoryId } = req.params;
 
     try {
-        // Start building the update query
-        let query = `UPDATE menus SET name = $1, description = $2, price = $3, category_id = $4`;
-        const queryParams = [name, description, price, category_id];
+        const result = await pool.query('SELECT * FROM menu WHERE category_id = $1', [categoryId]);
+        const menusWithImageURLs = result.rows.map(menu => ({
+            ...menu,
+            image: menu.image ? `${req.protocol}://${req.get('host')}/uploads/${menu.image}` : null
+        }));
 
-        // If an image is provided, include it in the query
+        res.status(200).json(menusWithImageURLs);
+    } catch (error) {
+        console.error('Error fetching menu items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/menus/filtered', async (req, res) => {
+    const { category_id, subCategory_id } = req.query;
+
+    try {
+        // Build the base query and parameters array
+        let query = `SELECT * FROM menu WHERE category_id = $1`;
+        let queryParams = [category_id];
+
+        // If subCategory_id is provided, add it to the query
+        if (subCategory_id) {
+            query += ` AND subCategory_id = $2`;
+            queryParams.push(subCategory_id);
+        }
+
+        const result = await pool.query(query, queryParams);
+
+        // Construct the image URLs if images exist
+        const menuItemsWithImageURLs = result.rows.map(item => ({
+            ...item,
+            image: item.image ? `${req.protocol}://${req.get('host')}/uploads/${item.image}` : null
+        }));
+
+        res.status(200).json(menuItemsWithImageURLs);
+    } catch (error) {
+        console.error('Error fetching menu items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 4. Update an existing menu item
+app.put('/menus/:id', upload.single('image'), async (req, res) => {
+    const id = req.params.id;
+    const { name, price, category_id, subCategory_id, printerName, isFridge } = req.body;
+    const image = req.file ? req.file.filename : null;
+
+    try {
+        let query = `UPDATE menu SET name = $1, price = $2, category_id = $3, subCategory_id = $4, printerName = $5, isFridge = $6`;
+        const queryParams = [name, price, category_id, subCategory_id, printerName, isFridge];
+
         if (image) {
-            query += `, image = $5 WHERE id = $6`;
+            query += `, image = $7 WHERE id = $8`;
             queryParams.push(image, id);
         } else {
-            // If no image is provided, do not update the image field
-            query += ` WHERE id = $5`;
+            query += ` WHERE id = $7`;
             queryParams.push(id);
         }
 
-        // Execute the update query
         const result = await pool.query(query, queryParams);
 
-        // Check if the update was successful
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Menu item not found' });
         }
 
-        // Fetch the updated menu item from the database to return in the response
-        const updatedItem = await pool.query('SELECT * FROM menus WHERE id = $1', [id]);
-        res.status(200).json(updatedItem.rows[0]);
-
+        const updatedMenu = await pool.query('SELECT * FROM menu WHERE id = $1', [id]);
+        res.status(200).json(updatedMenu.rows[0]);
     } catch (error) {
-        console.error('Error updating menu:', error);
+        console.error('Error updating menu item:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-
-
+// 5. Delete a menu item
 app.delete('/menus/:id', async (req, res) => {
-    const id = req.params.id; // Get the ID from the request parameters
+    const { id } = req.params;
 
     try {
-        const result = await pool.query(
-            'DELETE FROM menus WHERE id = $1',
-            [id] // Include ID in the query
-        );
+        const result = await pool.query('DELETE FROM menu WHERE id = $1', [id]);
 
-        // Check if any row was deleted
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Menu item not found' });
         }
 
-        // Respond with a success message
-        res.status(204).send(); // No content to send back
+        res.status(200).json({ message: 'Menu item deleted successfully' });
     } catch (error) {
-        console.error('Error deleting menu:', error);
+        console.error('Error deleting menu item:', error);
         res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-
-
-app.get('/menus', async (req, res) => {
-    try {
-        const result = await pool.query(`
-      SELECT m.id, m.name, m.description, m.price, m.category_id, c.name AS category_name, m.image 
-      FROM menus m
-      LEFT JOIN category c ON m.category_id = c.id
-    `);
-
-        // Map through each row and prepend the full URL for the image
-        const menusWithImageURLs = result.rows.map(menu => ({
-            ...menu,
-            image: menu.image ? `${req.protocol}://${req.get('host')}/uploads/${menu.image}` : null // If image exists, build the full URL
-        }));
-
-        res.status(200).json(menusWithImageURLs); // Return the menu items with category names and image URLs
-    } catch (error) {
-        console.error('Error fetching menus:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-
-app.get('/menus', async (req, res) => {
-    try {
-        const result = await pool.query(`
-      SELECT m.id, m.name, m.description, m.price, m.category_id, c.name AS category_name, m.image 
-      FROM menus m
-      LEFT JOIN category c ON m.category_id = c.id
-    `);
-        console.log(result);
-        res.status(200).json(result.rows); // Return the menu items with category names and image URLs
-    } catch (error) {
-        console.error('Error fetching menus:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-app.get('/categorymenus', async (req, res) => {
-    try {
-        // Query to get categories and their associated menu items
-        const result = await pool.query(`
-          SELECT 
-              c.id AS category_id, 
-              c.name AS category_name, 
-              json_agg(m) AS items 
-          FROM category c 
-          LEFT JOIN (
-              SELECT id, name, description, price, category_id 
-              FROM menus
-          ) m ON c.id = m.category_id 
-          GROUP BY c.id
-      `);
-
-        res.status(200).json(result.rows); // Return the categories with their menu items
-    } catch (error) {
-        console.error('Error fetching menus:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-
-
-// Simple validation example
-const validateBookingData = (data) => {
-    const { location, date, startTime, numberOfPeople, name, phoneNumber } = data;
-
-    if (!location || !date || !startTime || !numberOfPeople || !name || !phoneNumber) {
-        throw new Error('All fields are required');
-    }
-};
-
-
-
-app.post('/pay', async (req, res) => {
-    console.log("Pay called", req.query)
-    let { evcNumber, amount } = req.body;
-    const waafipay = require('waafipay-sdk-node').API("API-1144768468AHX", "1000201", "M0910188", { testMode: true }); // TestMode flag -->  true is production : false is test 
-
-    waafipay.preAuthorize({
-        paymentMethod: "MWALLET_ACCOUNT",
-        accountNo: "252" + evcNumber,
-        amount: amount,
-        currency: "USD",
-        description: "wan diray"
-    }, function (err, result) {
-        console.log("response", result)
-
-        if (result.responseCode == "2001") {
-
-
-            res.send({ success: true, message: "Payment Processed successfully" })
-            return;
-
-        } else {
-            if (result.responseMsg.includes("Aborted")) {
-                res.render('index', { fail: true, message: "Waad ka laabatay lacag bixinta" });
-                return;
-            } else {
-                res.send({ success: false, message: "Laguma Guulaysan Lacag Bixinta , Isku day markale", })
-
-
-
-            }
-        }
-    })
-
-
-});
-app.post('/book-table', async (req, res) => {
-    try {
-        // Validate the booking data including startTime and endTime
-        validateBookingData(req.body);
-
-        // Destructure the data from the request body
-        const {
-            location,
-            date,
-            startTime,
-            numberOfPeople,
-            name,
-            phoneNumber
-        } = req.body;
-
-        // Insert the booking into the database with start and end times
-        await pool.query(
-            'INSERT INTO bookings (location, date, start_time, num_people, name, phone_number) VALUES ($1, $2, $3, $4, $5, $6)',
-            [location, date, startTime, numberOfPeople, name, phoneNumber]
-        );
-        tokens = await getDeviceTokens();
-        var message = {
-            tokens: tokens,
-            notification: {
-                title: "Booking notification",
-                body: "new Booking Message",
-            },
-        };
-        await admin.messaging().sendEachForMulticast(message);
-
-        // Send a success response
-        res.status(200).send('Booking confirmed');
-    } catch (error) {
-        console.error('Error booking table:', error);
-        res.status(400).send(`Error: ${error.message}`);
-    }
-});
-
-// server.js
-async function getDeviceTokens() {
-    try {
-        const result = await pool.query('SELECT deviceid FROM devicetoken');
-        // Extract device tokens from the query result
-        return result.rows.map(row => row.deviceid);
-    } catch (error) {
-        console.error('Error fetching device tokens:', error);
-        throw new Error('Could not fetch device tokens');
-    }
-}
-
-
-app.post('/send-email', async (req, res) => {
-    const { email, subject, message } = req.body;
-
-    try {
-        await transporter.sendMail({
-            from: 'your-email@gmail.com',
-            to: email,
-            subject: subject,
-            text: message,
-        });
-
-        res.status(200).send({ success: true });
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).send({ error: 'Failed to send email' });
-    }
-});
-
-
-
-// Bookings Route
-app.get('/bookings', async (req, res) => {
-    try {
-        const result = await pool.query(`
-      SELECT 
-        b.id, 
-        b.date, 
-        b.name, 
-        b.phone_number, 
-        loc.name AS location,
-        b.start_time, 
-        b.num_people,
-        b.status
-      FROM bookings b
-      LEFT JOIN locations loc ON b.location::integer = loc.id
-    `);
-
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching bookings:', error);
-        res.status(500).send({ error: 'Failed to retrieve bookings' });
-    }
-});
-
-app.get('/bookings/:deviceToken', async (req, res) => {
-    const { deviceToken } = req.params;
-    try {
-        // Execute both operations concurrently
-        const [, bookingsResult] = await Promise.all([
-            // Save or store the device token (but we don't need to return this result)
-            pool.query(
-                `INSERT INTO devicetoken (deviceid)
-         VALUES ($1)
-         ON CONFLICT (deviceid) DO NOTHING`,
-                [deviceToken]
-            ),
-
-            // Fetch the booking data
-            pool.query(`
-        SELECT 
-          b.id, 
-          b.date, 
-          b.name, 
-          b.phone_number, 
-          loc.name AS location,
-          b.start_time, 
-          b.num_people,
-          b.status
-        FROM bookings b
-        LEFT JOIN locations loc ON b.location::integer = loc.id
-      `)
-        ]);
-
-        // Send only the booking data as the response
-        res.json(bookingsResult.rows);
-    } catch (error) {
-        console.error('Error fetching bookings:', error);
-        res.status(500).send({ error: 'Failed to retrieve bookings' });
-    }
-});
-
-app.post('/bookingList', async (req, res) => {
-    try {
-        const { status, date } = req.body; // Make sure your request body includes both 'status' and 'date'
-        const query = `
-      SELECT 
-        b.id, 
-        b.date, 
-        b.name, 
-        b.phone_number, 
-        loc.name AS location,
-        b.start_time, 
-        b.num_people,
-        b.status
-      FROM bookings b
-      LEFT JOIN locations loc ON b.location::integer = loc.id
-      WHERE b.date = $1
-        AND b.status = $2
-    `;
-
-        // Execute the query with parameterized values
-        const result = await pool.query(query, [date, status]);
-
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching bookings:', error);
-        res.status(500).send({ error: 'Failed to retrieve bookings' });
-    }
-});
-
-app.put('/bookings/:id/status', async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const validStatuses = ['pending', 'active', 'completed'];
-
-    if (!validStatuses.includes(status)) {
-        return res.status(400).send({ error: 'Invalid status' });
-    }
-
-    try {
-        await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, id]);
-        res.status(200).send('Booking status updated');
-    } catch (error) {
-        console.error('Error updating booking status:', error);
-        res.status(500).send({ error: 'Failed to update booking status' });
     }
 });
 

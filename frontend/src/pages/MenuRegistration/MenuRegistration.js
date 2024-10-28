@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import styles from './MenuRegistration.module.css'; // Assuming you have a CSS module for styling
+import styles from './MenuRegistration.module.css';
 
 const MenuRegistration = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [subCategories, setSubCategories] = useState([]); // for subcategory dropdown
+    const [subCategories, setSubCategories] = useState([]);
     const [editingMenuItem, setEditingMenuItem] = useState(null);
-    const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', category_id: '', subCategory_id: '', image: null });
+    const [newMenuItem, setNewMenuItem] = useState({
+        name: '', price: '', category_id: '', subCategory_id: '', image: null, printerName: '', isFridge: 'no'
+    });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isFridgeItem, setIsFridgeItem] = useState("no");
 
-    // Fetch categories and menu items from API
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -41,17 +41,23 @@ const MenuRegistration = () => {
     const openModal = (item = null) => {
         if (item) {
             setEditingMenuItem(item);
-            setNewMenuItem({ name: item.name, price: item.price, category_id: item.category_id, subCategory_id: item.subCategory_id, image: null });
+            setNewMenuItem({
+                name: item.name, price: item.price, category_id: item.category_id, subCategory_id: item.subCategory_id, image: null, printerName: item.printerName, isFridge: item.isFridge
+            });
         } else {
             setEditingMenuItem(null);
-            setNewMenuItem({ name: '', price: '', category_id: '', subCategory_id: '', image: null });
+            setNewMenuItem({
+                name: '', price: '', category_id: '', subCategory_id: '', image: null, printerName: '', isFridge: 'no'
+            });
         }
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setNewMenuItem({ name: '', price: '', category_id: '', subCategory_id: '', image: null });
+        setNewMenuItem({
+            name: '', price: '', category_id: '', subCategory_id: '', image: null, printerName: '', isFridge: 'no'
+        });
         setEditingMenuItem(null);
     };
 
@@ -68,14 +74,14 @@ const MenuRegistration = () => {
         formData.append('price', newMenuItem.price);
         formData.append('category_id', newMenuItem.category_id);
         formData.append('subCategory_id', newMenuItem.subCategory_id);
+        formData.append('printerName', newMenuItem.printerName);
+        formData.append('isFridge', newMenuItem.isFridge);
         formData.append('image', newMenuItem.image ? newMenuItem.image : editingMenuItem.image);
 
         try {
             if (editingMenuItem) {
                 await axios.put(`http://localhost:4422/menus/${editingMenuItem.id}`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
 
                 setMenuItems(menuItems.map(item =>
@@ -83,9 +89,7 @@ const MenuRegistration = () => {
                 ));
             } else {
                 const response = await axios.post('http://localhost:4422/menus', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 setMenuItems([...menuItems, response.data]);
             }
@@ -118,6 +122,12 @@ const MenuRegistration = () => {
         }
     };
 
+    const handleCategoryChange = async (e) => {
+        const categoryId = e.target.value;
+        setNewMenuItem({ ...newMenuItem, category_id: categoryId, subCategory_id: '' });
+        await fetchSubCategories(categoryId);
+    };
+
     return (
         <div className={styles.container}>
             <h2>Manage Menu</h2>
@@ -144,16 +154,14 @@ const MenuRegistration = () => {
                         <tr key={item.id}>
                             <td>{item.printerName}</td>
                             <td>{item.isFridge}</td>
-                            <td>{item.category.name}</td>
-                            <td>{item.subCategory.name}</td>
+                            <td>{item.category?.name}</td>
+                            <td>{item.subCategory?.name}</td>
                             <td>{item.name}</td>
                             <td>${(parseFloat(item.price) || 0).toFixed(2)}</td>
                             <td>
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} style={{ width: '30px', height: '18px' }} />
-                                ) : (
-                                    'No Image'
-                                )}
+                                ) : 'No Image'}
                             </td>
                             <td className={styles.actions}>
                                 <button className={styles['edit-btn']} onClick={() => openModal(item)}>
@@ -176,8 +184,6 @@ const MenuRegistration = () => {
                             <span className={styles.close} onClick={closeModal}>&times;</span>
                         </div>
                         <form onSubmit={handleSubmit} className={styles['form-layout']}>
-
-                            {/* Printer Name */}
                             <div className={styles.field}>
                                 <label>Printer Name</label>
                                 <input
@@ -188,7 +194,6 @@ const MenuRegistration = () => {
                                     required
                                 />
                             </div>
-                            {/* Is Fridge Item */}
                             <div className={styles.field}>
                                 <label className={styles.radiolabel}>Is Fridge Item?</label>
                                 <div className={styles.RadioButton}>
@@ -196,8 +201,8 @@ const MenuRegistration = () => {
                                         <input
                                             type="radio"
                                             value="yes"
-                                            checked={isFridgeItem === "yes"}
-                                            onChange={() => setIsFridgeItem("yes")}
+                                            checked={newMenuItem.isFridge === "yes"}
+                                            onChange={() => setNewMenuItem({ ...newMenuItem, isFridge: "yes" })}
                                         />
                                         Yes
                                     </label>
@@ -205,24 +210,18 @@ const MenuRegistration = () => {
                                         <input
                                             type="radio"
                                             value="no"
-                                            checked={isFridgeItem === "no"}
-                                            onChange={() => setIsFridgeItem("no")}
+                                            checked={newMenuItem.isFridge === "no"}
+                                            onChange={() => setNewMenuItem({ ...newMenuItem, isFridge: "no" })}
                                         />
                                         No
                                     </label>
                                 </div>
                             </div>
-
-                            {/* Category */}
                             <div className={styles.field}>
                                 <label>Category</label>
                                 <select
                                     value={newMenuItem.category_id}
-                                    onChange={async (e) => {
-                                        const selectedCategoryId = e.target.value;
-                                        setNewMenuItem({ ...newMenuItem, category_id: selectedCategoryId, subCategory_id: '' }); // Reset subcategory
-                                        fetchSubCategories(selectedCategoryId); // Fetch subcategories based on selected category
-                                    }}
+                                    onChange={handleCategoryChange}
                                     required
                                 >
                                     <option value="" disabled>Select Category</option>
@@ -231,8 +230,6 @@ const MenuRegistration = () => {
                                     ))}
                                 </select>
                             </div>
-
-                            {/* Sub Category */}
                             <div className={styles.field}>
                                 <label>Sub Category</label>
                                 <select
@@ -246,8 +243,6 @@ const MenuRegistration = () => {
                                     ))}
                                 </select>
                             </div>
-
-                            {/* Menu Item Name */}
                             <div className={styles.field}>
                                 <label>Menu Item Name</label>
                                 <input
@@ -258,8 +253,6 @@ const MenuRegistration = () => {
                                     required
                                 />
                             </div>
-
-                            {/* Price */}
                             <div className={styles.field}>
                                 <label>Price</label>
                                 <input
@@ -270,8 +263,6 @@ const MenuRegistration = () => {
                                     required
                                 />
                             </div>
-
-                            {/* Image Upload */}
                             <div className={styles.field}>
                                 <label>Upload Image</label>
                                 <input
@@ -280,7 +271,6 @@ const MenuRegistration = () => {
                                     onChange={handleImageChange}
                                 />
                             </div>
-
                             <button type="submit" className={styles['submit-btn']} disabled={loading}>
                                 {loading ? <CircularProgress size={24} /> : 'Save'}
                             </button>
