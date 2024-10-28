@@ -1,24 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useContext } from 'react';
+import { StoreContext } from '../../context/StoreContext'; // Update the import path as necessary
 import FoodItem from '../FoodItem/FoodItem';
 import './FoodDisplay.css';
 
 const FoodDisplay = ({ category, subCategory }) => {
-    const [foodList, setFoodList] = useState([]);
-
-    // Fetch food items from the API
-    useEffect(() => {
-        const fetchFoodItems = async () => {
-            try {
-                const response = await axios.get('http://localhost:4422/menus');
-                setFoodList(response.data);
-            } catch (error) {
-                console.error('Error fetching food items:', error);
-            }
-        };
-
-        fetchFoodItems();
-    }, []);
+    const { foodList } = useContext(StoreContext); // Access foodList from context
 
     // Filtered list based on category and subcategory
     const filteredFoodList = foodList.filter(
@@ -45,7 +31,9 @@ const FoodDisplay = ({ category, subCategory }) => {
                         ))}
                     </div>
                 </>
-            ) : null}
+            ) : (
+               null
+            )}
         </div>
     );
 };
