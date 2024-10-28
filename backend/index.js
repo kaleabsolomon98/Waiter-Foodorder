@@ -25,7 +25,7 @@ const pool = new Pool({
     port: 5432,
     max: 200, // Maximum number of connections
     idleTimeoutMillis: 30000, // Time in ms before an idle connection is closed
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 2000, 
 });
 
 
@@ -168,7 +168,6 @@ app.put('/categories/:id', upload.single('image'), async (req, res) => {
 });
 
 
-
 app.delete('/categories/:id', async (req, res) => {
     const id = req.params.id; // Get the ID from the request parameters
     try {
@@ -186,6 +185,95 @@ app.delete('/categories/:id', async (req, res) => {
         res.status(204).send(); // No content to send back
     } catch (error) {
         console.error('Error deleting category:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/subcategories', upload.single('image'), async (req, res) => {
+    const { name, description, category_id } = req.body; // Get the category_id from the request
+    const image = req.file ? req.file.filename : null; // Get the image filename if it exists
+
+    try {
+        const result = await pool.query(
+            'INSERT INTO subcategory (name, description, image, category_id) VALUES ($1, $2, $3, $4) RETURNING *',
+            [name, description, image, category_id]
+        );
+
+        // Construct the image URL if the image exists
+        const imageUrl = image ? `${req.protocol}://${req.get('host')}/uploads/${image}` : null;
+
+        // Return the newly created subcategory with the image URL
+        res.status(201).json({ ...result.rows[0], image: imageUrl });
+    } catch (error) {
+        console.error('Error creating subcategory:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/subcategories', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM subcategory');
+        const subcategoriesWithImageURLs = result.rows.map(subcategory => ({
+            ...subcategory,
+            image: subcategory.image ? `${req.protocol}://${req.get('host')}/uploads/${subcategory.image}` : null
+        }));
+
+        res.status(200).json(subcategoriesWithImageURLs); // Return all subcategories with image URLs
+    } catch (error) {
+        console.error('Error fetching subcategories:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.put('/subcategories/:id', upload.single('image'), async (req, res) => {
+    const id = req.params.id;
+    const { name, description, category_id } = req.body; // Include category_id
+    const image = req.file ? req.file.filename : null;
+
+    try {
+        // Start building the update query
+        let query = `UPDATE subcategory SET name = $1, description = $2, category_id = $3`;
+        const queryParams = [name, description, category_id];
+
+        // If an image is provided, include it in the query
+        if (image) {
+            query += `, image = $4 WHERE id = $5`;
+            queryParams.push(image, id);
+        } else {
+            query += ` WHERE id = $4`;
+            queryParams.push(id);
+        }
+
+        // Execute the update query
+        const result = await pool.query(query, queryParams);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Subcategory not found' });
+        }
+
+        // Fetch the updated subcategory to return in the response
+        const updatedSubcategory = await pool.query('SELECT * FROM subcategory WHERE id = $1', [id]);
+        res.status(200).json(updatedSubcategory.rows[0]);
+
+    } catch (error) {
+        console.error('Error updating subcategory:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.delete('/subcategories/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await pool.query('DELETE FROM subcategory WHERE id = $1', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Subcategory not found' });
+        }
+
+        res.status(200).json({ message: 'Subcategory deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting subcategory:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
