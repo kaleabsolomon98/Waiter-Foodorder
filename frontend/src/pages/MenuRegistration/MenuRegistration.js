@@ -282,7 +282,7 @@ const MenuRegistration = () => {
                                 <select
                                     value={newMenuItem.subcategory_id}
                                     onChange={(e) => setNewMenuItem({ ...newMenuItem, subcategory_id: e.target.value })}
-                                    required
+
                                 >
                                     <option value="" disabled>Select Sub Category</option>
                                     {subCategories.map(subCategory => (

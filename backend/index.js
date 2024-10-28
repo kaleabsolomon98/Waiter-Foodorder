@@ -300,13 +300,15 @@ app.delete('/subcategories/:id', async (req, res) => {
 app.post('/menus', upload.single('image'), async (req, res) => {
     const { name, price, category_id, subcategory_id, printerName, isFridge } = req.body;
     const image = req.file ? req.file.filename : null;
-    console.log(req.body);
+
+    // Convert empty string to null for subcategory_id
+    const subcategoryId = subcategory_id === "" ? null : subcategory_id;
 
     try {
         // Insert the new menu item
         const insertResult = await pool.query(
             'INSERT INTO menu (name, price, category_id, subcategory_id, "printerName", "isFridge", image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [name, price, category_id, subcategory_id, printerName, isFridge, image]
+            [name, price, category_id, subcategoryId, printerName, isFridge, image]
         );
 
         const newMenuItem = insertResult.rows[0];
@@ -321,7 +323,8 @@ app.post('/menus', upload.single('image'), async (req, res) => {
             WHERE category.id = $2
         `;
 
-        const categoryResult = await pool.query(categoryQuery, [subcategory_id, category_id]);
+        // Use subcategoryId variable here
+        const categoryResult = await pool.query(categoryQuery, [subcategoryId, category_id]);
         const categoryData = categoryResult.rows[0];
 
         // Construct the response
@@ -339,6 +342,7 @@ app.post('/menus', upload.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 
 

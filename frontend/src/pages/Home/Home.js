@@ -6,11 +6,14 @@ import FoodDisplay from '../../components/FoodDisplay/FoodDisplay'
 
 const Home = () => {
     const [category, setCategory] = useState('All');
+    const [subCategory, setSubCategory] = useState('All');
+
+
     return (
         <div>
             <Header />
-            <ExploreMenu category={category} setCategory={setCategory} />
-            <FoodDisplay category={category} />
+            <ExploreMenu category={category} setCategory={setCategory} subCategory={subCategory} setSubCategory={setSubCategory} />
+            <FoodDisplay category={category} subCategory={subCategory} />
         </div>
     )
 }

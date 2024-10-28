@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './ExploreMenu.css';
 
-const ExploreMenu = ({ category, setCategory }) => {
+const ExploreMenu = ({ category, setCategory, subCategory, setSubCategory }) => {
     const [menuCategories, setMenuCategories] = useState([]);
     const [subMenuItems, setSubMenuItems] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -44,6 +44,11 @@ const ExploreMenu = ({ category, setCategory }) => {
     // Filter subcategories based on selected category ID
     const filteredSubMenuItems = subMenuItems.filter(subItem => selectedCategory && subItem.category_id === selectedCategory.id);
 
+    // Log subCategory whenever it changes
+    useEffect(() => {
+        console.log("Current subCategory:", subCategory);
+    }, [subCategory]);
+
     return (
         <div className='explore-menu' id='explore-menu'>
             <h1>Explore our menu</h1>
@@ -51,13 +56,19 @@ const ExploreMenu = ({ category, setCategory }) => {
             <div className='explore-menu-list'>
                 {menuCategories.map((item, index) => (
                     <div
-                        onClick={() => setCategory(prev => prev === item.name ? 'All' : item.name)}
+                        onClick={() => {
+                            setCategory(prev => {
+                                const newCategory = prev === item.name ? 'All' : item.name;
+                                setSubCategory("All");
+                                return newCategory;
+                            });
+                        }}
                         key={index}
                         className='explore-menu-list-item'
                     >
                         <img
                             className={category === item.name ? 'active' : ''}
-                            src={item.image}  // Assuming each category has an `image` property
+                            src={item.image}
                             alt={item.name}
                         />
                         <p>{item.name}</p>
@@ -72,13 +83,17 @@ const ExploreMenu = ({ category, setCategory }) => {
                     <div className='explore-menu-list'>
                         {filteredSubMenuItems.map((item, index) => (
                             <div
-                                onClick={() => setCategory(prev => prev === item.name ? 'All' : item.name)}
+                                onClick={() => {
+                                    const newSubCategory = subCategory === item.name ? 'All' : item.name;
+                                    setSubCategory(newSubCategory);
+                                    console.log("Attempting to set new SubCategory:", newSubCategory);
+                                }}
                                 key={index}
                                 className='explore-menu-list-item'
                             >
                                 <img
-                                    className={category === item.name ? 'active' : ''}
-                                    src={item.image}  // Assuming each subcategory has an `image` property
+                                    className={subCategory === item.name ? 'active' : ''}
+                                    src={item.image}
                                     alt={item.name}
                                 />
                                 <p>{item.name}</p>
