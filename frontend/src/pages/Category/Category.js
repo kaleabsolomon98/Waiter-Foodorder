@@ -52,7 +52,7 @@ const Category = () => {
         formData.append('name', newCategory.name);
         formData.append('description', newCategory.description);
         if (newCategory.image) formData.append('image', newCategory.image);
-        
+
         try {
             if (editingCategory) {
                 const response = await axios.put(`http://localhost:4422/categories/${editingCategory.id}`, formData, {
@@ -65,6 +65,7 @@ const Category = () => {
                 const response = await axios.post('http://localhost:4422/categories', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
+                console.log(response.data);
                 setCategories([...categories, response.data]);
             }
             closeModal();

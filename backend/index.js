@@ -103,7 +103,7 @@ app.post('/categories', upload.single('image'), async (req, res) => {
         const imageUrl = image ? `${req.protocol}://${req.get('host')}/uploads/${image}` : null;
 
         // Return the newly created category with the image URL
-        res.status(201).json({ ...result.rows[0], imageUrl });
+        res.status(201).json({ ...result.rows[0], image: imageUrl });
     } catch (error) {
         console.error('Error creating category:', error);
         res.status(500).json({ error: 'Internal server error' });

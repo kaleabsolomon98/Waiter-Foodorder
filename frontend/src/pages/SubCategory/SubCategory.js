@@ -12,73 +12,42 @@ const SubCategory = () => {
     const [newSubCategory, setNewSubCategory] = useState({ name: '', category_id: '', description: '', image: '' });
     const [editingSubCategory, setEditingSubCategory] = useState(null);
 
+    // Fetch categories and subcategories from APIs
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                // Set your categories data here
-                setSubCategories(
-                    [
-                        {
-                            "id": 1,
-                            "category": "Food",
-                            "subcategory": "Vegetables",
-                            "description": "Fresh and organic vegetables.",
-                            "image": "https://example.com/images/vegetables.jpg"
-                        },
-                        {
-                            "id": 2,
-                            "category": "Food",
-                            "subcategory": "Fruits",
-                            "description": "Juicy and fresh fruits.",
-                            "image": "https://example.com/images/fruits.jpg"
-                        },
-                        {
-                            "id": 3,
-                            "category": "Dairy",
-                            "subcategory": "Milk",
-                            "description": "Fresh dairy products including milk and cheese.",
-                            "image": "https://example.com/images/milk.jpg"
-                        },
-                        {
-                            "id": 4,
-                            "category": "Snacks",
-                            "subcategory": "Chips",
-                            "description": "Various types of crunchy chips.",
-                            "image": "https://example.com/images/chips.jpg"
-                        },
-                        {
-                            "id": 5,
-                            "category": "Beverages",
-                            "subcategory": "Juices",
-                            "description": "Natural fruit juices.",
-                            "image": "https://example.com/images/juices.jpg"
-                        }
-                    ]
-                );
+                const response = await axios.get('http://localhost:4422/categories');
+                setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         };
 
-        // const fetchSubCategories = async () => {
-        //     setLoading(true);
-        //     try {
-        //         // Fetch your subcategories data here
-        //     } catch (error) {
-        //         console.error('Error fetching subcategories:', error);
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
+        const fetchSubCategories = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get('http://localhost:4422/subcategories');
+                setSubCategories(response.data);
+            } catch (error) {
+                console.error('Error fetching subcategories:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
         fetchCategories();
-        // fetchSubCategories();
+        fetchSubCategories();
     }, []);
 
     const openModal = (subCategory = null) => {
         if (subCategory) {
             setEditingSubCategory(subCategory);
-            setNewSubCategory({ subcategory: subCategory.subcategory, category_id: subCategory.category_id, description: subCategory.description, image: subCategory.image });
+            setNewSubCategory({
+                subcategory: subCategory.subcategory,
+                category_id: subCategory.category_id,
+                description: subCategory.description,
+                image: subCategory.image
+            });
         } else {
             setEditingSubCategory(null);
             setNewSubCategory({ name: '', category_id: '', description: '', image: '' });
@@ -98,12 +67,12 @@ const SubCategory = () => {
 
         try {
             if (editingSubCategory) {
-                await axios.put(`https://hotel.samesoft.app/subcategories/${editingSubCategory.id}`, newSubCategory);
+                await axios.put(`http://localhost:4422/subcategories/${editingSubCategory.id}`, newSubCategory);
                 setSubCategories(subCategories.map(item =>
                     item.id === editingSubCategory.id ? { ...item, ...newSubCategory } : item
                 ));
             } else {
-                const response = await axios.post('https://hotel.samesoft.app/subcategories', newSubCategory);
+                const response = await axios.post('http://localhost:4422/subcategories', newSubCategory);
                 setSubCategories([...subCategories, response.data]);
             }
             closeModal();
@@ -117,7 +86,7 @@ const SubCategory = () => {
     const handleDelete = async (id) => {
         setLoading(true);
         try {
-            await axios.delete(`https://hotel.samesoft.app/subcategories/${id}`);
+            await axios.delete(`http://localhost:4422/subcategories/${id}`);
             setSubCategories(subCategories.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting subcategory:', error);
@@ -136,7 +105,6 @@ const SubCategory = () => {
 
             {loading ? (
                 null
-                // <CircularProgress />
             ) : (
                 <table className={styles.table}>
                     <thead>
@@ -151,9 +119,8 @@ const SubCategory = () => {
                     <tbody>
                         {subCategories.map((item) => (
                             <tr key={item.id}>
-                                {/* <td>{categories.find(cat => cat.id === item.category_id)?.name || 'Unknown'}</td> */}
                                 <td>{item.subcategory}</td>
-                                <td>{item.category}</td>
+                                <td>{categories.find(cat => cat.id === item.category_id)?.name || 'Unknown'}</td>
                                 <td>{item.description}</td>
                                 <td>
                                     {item.image && <img src={item.image} alt={item.name} style={{ width: '50px', height: '50px' }} />}
@@ -189,7 +156,7 @@ const SubCategory = () => {
                                 >
                                     <option value="" disabled>Select Category</option>
                                     {categories.map(category => (
-                                        <option key={category.id} value={category.id}>{category.category}</option>
+                                        <option key={category.id} value={category.id}>{category.name}</option>
                                     ))}
                                 </select>
                             </div>
