@@ -43,10 +43,11 @@ export const StoreContextProvider = (props) => {
     const getTotalCartAmount = () => {
         let totalAmount = 0;
         for (const item in cartItems) {
-            if (cartItems[item] > 0) {
-                let itemInfo = foodList.find((product) => product.id === item);
+            const itemId = parseInt(item, 10); // Convert item to an integer
+            if (cartItems[itemId] > 0) {
+                const itemInfo = foodList.find((product) => product.id === itemId);
                 if (itemInfo) {
-                    totalAmount += itemInfo.price * cartItems[item];
+                    totalAmount += itemInfo.price * cartItems[itemId];
                 }
             }
         }
