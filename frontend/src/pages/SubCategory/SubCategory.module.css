@@ -1,250 +1,298 @@
 /* General Container */
 .container {
-    padding: 20px;
-    transition: margin-left 0.3s ease;
-  }
-  
-  /* Category Section */
-  .container-category {
-    margin-top: 20px;
-    background-color: white;
-    width: 100%;
-    padding: 20px;
-    border-radius: 8px; /* Added rounded corners */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
-  }
-  
-  /* Sidebar Visibility */
-  .sidebar-visible {
-    margin-left: 260px;
-  }
-  
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Category Section */
+.container-category {
+  margin-top: 20px;
+  background-color: white;
+  width: 100%;
+  padding: 20px;
+  border-radius: 8px;
+  /* Added rounded corners */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* Soft shadow */
+}
+
+/* Sidebar Visibility */
+.sidebar-visible {
+  margin-left: 260px;
+}
+
+.sidebar-hidden {
+  margin-left: 0;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+
+  .sidebar-visible,
   .sidebar-hidden {
     margin-left: 0;
   }
-  
-  /* Responsive Design for Mobile */
-  @media (max-width: 768px) {
-    .sidebar-visible,
-    .sidebar-hidden {
-      margin-left: 0;
-    }
-  }
-  
-  /* Select Styles */
-  select {
-    width: 100%;
-    padding: 15px; /* Adjusted for better spacing */
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    margin: 8px 0 20px 0;
-    background-color: #f9f9f9; /* Slightly gray background */
-    height: auto;
-  }
-  
-  /* Button Styles */
-  .add-btn-category {
-    background-color: #16a085; /* Primary color */
-    color: white;
-    padding: 12px 24px; /* More spacious button */
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px;
-    margin-top: 5px;
-    margin-bottom: 20px;
-    transition: background-color 0.3s; /* Transition effect */
-  }
-  
-  .add-btn-category:hover {
-    background-color: #3498db; /* Lighter blue on hover */
-  }
-  
-  /* Table Styles */
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
-  }
-  
-  .table th,
-  .table td {
-    padding: 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-  }
-  
-  .table th {
-    background-color: #2c3e50; /* Darker header */
-    color: white;
-  }
-  
-  .table tr:nth-child(even) {
-    background-color: #f2f2f2; /* Zebra striping */
-  }
-  
-  .table tr:hover {
-    background-color: #ddd; /* Light hover effect */
-  }
-  
-  .table .actions {
-    display: flex;
-    gap: 20px; /* Adjusted gap */
-  }
-  
-  .table .edit-btn,
-  .table .delete-btn {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #2980b9;
-  }
-  
-  .table .delete-btn {
-    color: #e74c3c; /* Delete button color */
-  }
-  
-  .table .edit-btn:hover {
-    color: #3498db; /* Lighter blue on hover */
-  }
-  
-  .table .delete-btn:hover {
-    color: #c0392b; /* Darker red on hover */
-  }
-  
-  /* Modal Styles */
-  .modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #ffffff; /* Cleaner white background */
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1); /* Softer shadow */
-    width: 400px;
-    max-width: 90%;
-    z-index: 1000;
-  }
-  
-  /* Modal Header Styles */
-  .modal-header {
-    background-color: #16a085; /* Header color */
-    padding: 10px 10px;
-    border-radius: 5px; /* Rounded corners */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .modal-header h2 {
-    font-family: 'Roboto', sans-serif;
-    font-size: 1.5rem;
-    color: white;
-    margin: 0;
-  }
-  
-  .modal-header .close {
-    font-size: 1.5rem; /* Larger close button */
-    background-color: transparent;
-    color: red; /* Close button color */
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Form Styles */
-  .modal form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem; /* Spacing between fields */
-  }
-  
-  /* Field Styles */
-  .Field {
-    margin-bottom: 1.5rem; /* Bottom margin */
-  }
-  
-  .field label {
-    display: block; /* Full width */
-    margin-bottom: 0.3rem; /* Margin below label */
-    font-family: 'Roboto', sans-serif;
-    font-size: 1rem;
-    color: #444;
-  }
-  
-  /* Radio Button Styles */
-  .RadioButton {
-    display: flex;
-    gap: 2rem; /* Space between radio buttons */
-    align-items: center; /* Center items */
-  }
-  
-  .RadioButton label {
-    font-family: 'Roboto', sans-serif;
-    font-size: 1rem;
-    color: #444;
-    margin-bottom: 0; /* Remove bottom margin */
-  }
-  
-  .RadioButton input {
-    margin-right: 0.5rem; /* Space between radio and label */
-  }
-  
-  /* Placeholder Color */
-  :root {
-    --placeholder-color: #aaa; /* Placeholder color variable */
-  }
-  
-  /* Input and Select Field Styles */
-  input[type="text"],
-  input[type="number"],
-  select,
-  input[type="file"] {
-    width: 100%; /* Full width */
-    padding: 12px; /* Consistent padding */
-    border: 1px solid #ddd; /* Match border style */
-    border-radius: 5px; /* Match border radius */
-    font-family: 'Roboto', sans-serif;
-    font-size: 1rem;
-    color: #555; /* Text color */
-    background-color: #f9f9f9; /* Gray background */
-    transition: border-color 0.3s ease; /* Transition */
-    height: 50px; /* Set height */
-  }
-  
-  /* Focus Styles for Input and Select Fields */
-  input[type="text"]:focus,
-  input[type="number"]:focus,
-  select:focus,
-  input[type="file"]:focus {
-    border-color: #6c63ff; /* Focus color */
-    outline: none; /* Remove outline */
-  }
-  
-  /* Button Styles */
-  button {
-    padding: 0.75rem;
-    background-color: #e74c3c; /* Primary button color */
-    color: #ffffff;
-    font-family: 'Roboto', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer;
-    transition: background-color 0.3s ease; /* Transition */
-  }
-  
-  button:hover {
-    background-color: #574fcb; /* Hover effect */
-  }
-  
-  button:disabled {
-    background-color: #ccc; /* Disabled button */
-    cursor: not-allowed; /* Cursor change */
-  }
-  
+}
+
+/* Select Styles */
+select {
+  width: 100%;
+  padding: 15px;
+  /* Adjusted for better spacing */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  margin: 8px 0 20px 0;
+  background-color: #f9f9f9;
+  /* Slightly gray background */
+  height: auto;
+}
+
+/* Button Styles */
+.add-btn-category {
+  background-color: #16a085;
+  /* Primary color */
+  color: white;
+  padding: 12px 24px;
+  /* More spacious button */
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
+  /* Transition effect */
+}
+
+.add-btn-category:hover {
+  background-color: #3498db;
+  /* Lighter blue on hover */
+}
+
+/* Table Styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* Soft shadow */
+}
+
+.table th,
+.table td {
+  padding: 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.table th {
+  background-color: #2c3e50;
+  /* Darker header */
+  color: white;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f2f2f2;
+  /* Zebra striping */
+}
+
+.table tr:hover {
+  background-color: #ddd;
+  /* Light hover effect */
+}
+
+.table .actions {
+  display: flex;
+  gap: 20px;
+  /* Adjusted gap */
+}
+
+.table .edit-btn,
+.table .delete-btn {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  min-height: 55px;
+  color: #2980b9;
+}
+
+.table .delete-btn {
+  color: #e74c3c;
+  /* Delete button color */
+}
+
+.table .edit-btn:hover {
+  color: #3498db;
+  /* Lighter blue on hover */
+}
+
+.table .delete-btn:hover {
+  color: #c0392b;
+  /* Darker red on hover */
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  /* Cleaner white background */
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+  /* Softer shadow */
+  width: 400px;
+  max-width: 90%;
+  z-index: 1000;
+}
+
+/* Modal Header Styles */
+.modal-header {
+  background-color: #16a085;
+  /* Header color */
+  padding: 10px 10px;
+  border-radius: 5px;
+  /* Rounded corners */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5rem;
+  color: white;
+  margin: 0;
+}
+
+.modal-header .close {
+  font-size: 1.5rem;
+  /* Larger close button */
+  background-color: transparent;
+  color: red;
+  /* Close button color */
+  border: none;
+  cursor: pointer;
+}
+
+/* Form Styles */
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  /* Spacing between fields */
+}
+
+/* Field Styles */
+.Field {
+  margin-bottom: 1.5rem;
+  /* Bottom margin */
+}
+
+.field label {
+  display: block;
+  /* Full width */
+  margin-bottom: 0.3rem;
+  /* Margin below label */
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #444;
+}
+
+/* Radio Button Styles */
+.RadioButton {
+  display: flex;
+  gap: 2rem;
+  /* Space between radio buttons */
+  align-items: center;
+  /* Center items */
+}
+
+.RadioButton label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 0;
+  /* Remove bottom margin */
+}
+
+.RadioButton input {
+  margin-right: 0.5rem;
+  /* Space between radio and label */
+}
+
+/* Placeholder Color */
+:root {
+  --placeholder-color: #aaa;
+  /* Placeholder color variable */
+}
+
+/* Input and Select Field Styles */
+input[type="text"],
+input[type="number"],
+select,
+input[type="file"] {
+  width: 100%;
+  /* Full width */
+  padding: 12px;
+  /* Consistent padding */
+  border: 1px solid #ddd;
+  /* Match border style */
+  border-radius: 5px;
+  /* Match border radius */
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #555;
+  /* Text color */
+  background-color: #f9f9f9;
+  /* Gray background */
+  transition: border-color 0.3s ease;
+  /* Transition */
+  height: 50px;
+  /* Set height */
+}
+
+/* Focus Styles for Input and Select Fields */
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+input[type="file"]:focus {
+  border-color: #6c63ff;
+  /* Focus color */
+  outline: none;
+  /* Remove outline */
+}
+
+/* Button Styles */
+button {
+  padding: 0.75rem;
+  background-color: #e74c3c;
+  /* Primary button color */
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  /* Rounded corners */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  /* Transition */
+}
+
+button:hover {
+  background-color: #574fcb;
+  /* Hover effect */
+}
+
+button:disabled {
+  background-color: #ccc;
+  /* Disabled button */
+  cursor: not-allowed;
+  /* Cursor change */
+}

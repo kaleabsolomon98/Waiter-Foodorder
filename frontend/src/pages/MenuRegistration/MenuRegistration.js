@@ -1,23 +1,24 @@
-// export default Menu;
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';// Modify as needed for your base URL
+import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import styles from './MenuRegistration.module.css'; // Assuming you have a CSS module for styling
 
 const MenuRegistration = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [subCategories, setSubCategories] = useState([]); // for subcategory dropdown
     const [editingMenuItem, setEditingMenuItem] = useState(null);
-    const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', category_id: '', image: null });
+    const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', category_id: '', subCategory_id: '', image: null });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [subCategories, setSubCategories] = useState([]); // for subcategory dropdown
     const [isFridgeItem, setIsFridgeItem] = useState("no");
+
+    // Fetch categories and menu items from API
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`https://hotel.samesoft.app/categories`);
+                const response = await axios.get('http://localhost:4422/categories');
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -26,56 +27,8 @@ const MenuRegistration = () => {
 
         const fetchMenuItems = async () => {
             try {
-                //  const response = await axios.get(`https://hotel.samesoft.app/menus`);
-                // setMenuItems(response.data);
-                setMenuItems([
-                    {
-                        "printerName": "Printer A",
-                        "isFridge": "Yes",
-                        "category": "Beverages",
-                        "subCategory": "Cold Drinks",
-                        "menu": "Iced Tea",
-                        "price": 2.50,
-                        "image": "https://example.com/images/iced-tea.jpg"
-                    },
-                    {
-                        "printerName": "Printer B",
-                        "isFridge": "No",
-                        "category": "Snacks",
-                        "subCategory": "Chips",
-                        "menu": "Potato Chips",
-                        "price": 1.25,
-                        "image": "https://example.com/images/potato-chips.jpg"
-                    },
-                    {
-                        "printerName": "Printer C",
-                        "isFridge": "Yes",
-                        "category": "Dairy",
-                        "subCategory": "Yogurt",
-                        "menu": "Greek Yogurt",
-                        "price": 3.00,
-                        "image": "https://example.com/images/greek-yogurt.jpg"
-                    },
-                    {
-                        "printerName": "Printer D",
-                        "isFridge": "No",
-                        "category": "Bakery",
-                        "subCategory": "Bread",
-                        "menu": "Whole Wheat Bread",
-                        "price": 2.00,
-                        "image": "https://example.com/images/whole-wheat-bread.jpg"
-                    },
-                    {
-                        "printerName": "Printer E",
-                        "isFridge": "Yes",
-                        "category": "Desserts",
-                        "subCategory": "Ice Cream",
-                        "menu": "Vanilla Ice Cream",
-                        "price": 4.50,
-                        "image": "https://example.com/images/vanilla-ice-cream.jpg"
-                    }
-                ]
-                );
+                const response = await axios.get('http://localhost:4422/menus');
+                setMenuItems(response.data);
             } catch (error) {
                 console.error('Error fetching menu items:', error);
             }
@@ -85,29 +38,26 @@ const MenuRegistration = () => {
         fetchMenuItems();
     }, []);
 
-
     const openModal = (item = null) => {
         if (item) {
             setEditingMenuItem(item);
-            setNewMenuItem({ name: item.name, price: item.price, category_id: item.category_id, image: null });
+            setNewMenuItem({ name: item.name, price: item.price, category_id: item.category_id, subCategory_id: item.subCategory_id, image: null });
         } else {
             setEditingMenuItem(null);
-            setNewMenuItem({ name: '', price: '', category_id: '', image: null });
+            setNewMenuItem({ name: '', price: '', category_id: '', subCategory_id: '', image: null });
         }
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setNewMenuItem({ name: '', price: '', category_id: '', image: null });
+        setNewMenuItem({ name: '', price: '', category_id: '', subCategory_id: '', image: null });
         setEditingMenuItem(null);
     };
 
     const handleImageChange = (e) => {
         setNewMenuItem({ ...newMenuItem, image: e.target.files[0] });
     };
-
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -117,24 +67,22 @@ const MenuRegistration = () => {
         formData.append('name', newMenuItem.name);
         formData.append('price', newMenuItem.price);
         formData.append('category_id', newMenuItem.category_id);
-
-        // Always append the image (even if it's null or the current one)
+        formData.append('subCategory_id', newMenuItem.subCategory_id);
         formData.append('image', newMenuItem.image ? newMenuItem.image : editingMenuItem.image);
 
         try {
             if (editingMenuItem) {
-                await axios.put(`https://hotel.samesoft.app/menus/${editingMenuItem.id}`, formData, {
+                await axios.put(`http://localhost:4422/menus/${editingMenuItem.id}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
 
-                // Update the menu item in the state with the new data (if an image was provided, update it)
                 setMenuItems(menuItems.map(item =>
                     item.id === editingMenuItem.id ? { ...item, ...newMenuItem, image: newMenuItem.image ? URL.createObjectURL(newMenuItem.image) : item.image } : item
                 ));
             } else {
-                const response = await axios.post(`https://hotel.samesoft.app/menus`, formData, {
+                const response = await axios.post('http://localhost:4422/menus', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -149,16 +97,24 @@ const MenuRegistration = () => {
         }
     };
 
-
     const handleDelete = async (id) => {
         setLoading(true);
         try {
-            await axios.delete(`/menus/${id}`);
+            await axios.delete(`http://localhost:4422/menus/${id}`);
             setMenuItems(menuItems.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting menu item:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchSubCategories = async (categoryId) => {
+        try {
+            const response = await axios.get(`http://localhost:4422/subcategories/${categoryId}`);
+            setSubCategories(response.data);
+        } catch (error) {
+            console.error('Error fetching subcategories:', error);
         }
     };
 
@@ -188,11 +144,10 @@ const MenuRegistration = () => {
                         <tr key={item.id}>
                             <td>{item.printerName}</td>
                             <td>{item.isFridge}</td>
-                            <td>{item.category}</td>
-                            <td>{item.subCategory}</td>
-                            <td>{item.menu}</td>
+                            <td>{item.category.name}</td>
+                            <td>{item.subCategory.name}</td>
+                            <td>{item.name}</td>
                             <td>${(parseFloat(item.price) || 0).toFixed(2)}</td>
-                            {/* <td>{categories.find(cat => cat.id === item.category_id)?.name || 'Unknown'}</td> */}
                             <td>
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} style={{ width: '30px', height: '18px' }} />
@@ -212,7 +167,6 @@ const MenuRegistration = () => {
                     ))}
                 </tbody>
             </table>
-
 
             {isModalOpen && (
                 <div className={styles.modal}>
@@ -264,19 +218,10 @@ const MenuRegistration = () => {
                                 <label>Category</label>
                                 <select
                                     value={newMenuItem.category_id}
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const selectedCategoryId = e.target.value;
-                                        setNewMenuItem({ ...newMenuItem, category_id: selectedCategoryId });
-                                        // Fetch subcategories based on selected category
-                                        const fetchSubCategories = async () => {
-                                            try {
-                                                const response = await axios.get(`https://hotel.samesoft.app/subcategories/${selectedCategoryId}`);
-                                                setSubCategories(response.data);
-                                            } catch (error) {
-                                                console.error('Error fetching subcategories:', error);
-                                            }
-                                        };
-                                        fetchSubCategories();
+                                        setNewMenuItem({ ...newMenuItem, category_id: selectedCategoryId, subCategory_id: '' }); // Reset subcategory
+                                        fetchSubCategories(selectedCategoryId); // Fetch subcategories based on selected category
                                     }}
                                     required
                                 >
@@ -291,35 +236,23 @@ const MenuRegistration = () => {
                             <div className={styles.field}>
                                 <label>Sub Category</label>
                                 <select
-                                    value={newMenuItem.subCategory}
-                                    onChange={(e) => {
-                                        setNewMenuItem({ ...newMenuItem, subCategory: e.target.value });
-                                        const selectElement = e.target;
-
-                                        // Check if the selected value is the default option
-                                        if (selectElement.value === "") {
-                                            selectElement.classList.add("placeholder"); // Add placeholder class
-                                        } else {
-                                            selectElement.classList.remove("placeholder"); // Remove if not
-                                        }
-                                    }}
-                                    className={newMenuItem.subCategory === "" ? "placeholder" : ""}
+                                    value={newMenuItem.subCategory_id}
+                                    onChange={(e) => setNewMenuItem({ ...newMenuItem, subCategory_id: e.target.value })}
+                                    required
                                 >
                                     <option value="" disabled>Select Sub Category</option>
                                     {subCategories.map(subCategory => (
                                         <option key={subCategory.id} value={subCategory.id}>{subCategory.name}</option>
                                     ))}
                                 </select>
-
-
                             </div>
 
-                            {/* Name */}
+                            {/* Menu Item Name */}
                             <div className={styles.field}>
-                                <label>Menu Name</label>
+                                <label>Menu Item Name</label>
                                 <input
                                     type="text"
-                                    placeholder="Enter Menu Name"
+                                    placeholder="Enter Menu Item Name"
                                     value={newMenuItem.name}
                                     onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
                                     required
@@ -340,25 +273,23 @@ const MenuRegistration = () => {
 
                             {/* Image Upload */}
                             <div className={styles.field}>
-                                <label>Image</label>
+                                <label>Upload Image</label>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => setNewMenuItem({ ...newMenuItem, image: e.target.files[0] })}
+                                    onChange={handleImageChange}
                                 />
                             </div>
 
-                            <button type="submit" className={styles['submit-btn']}>
-                                {loading ? <CircularProgress size={24} /> : (editingMenuItem ? 'Update Menu Item' : 'Add Menu Item')}
+                            <button type="submit" className={styles['submit-btn']} disabled={loading}>
+                                {loading ? <CircularProgress size={24} /> : 'Save'}
                             </button>
                         </form>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
 
 export default MenuRegistration;
-

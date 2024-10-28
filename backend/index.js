@@ -25,7 +25,7 @@ const pool = new Pool({
     port: 5432,
     max: 200, // Maximum number of connections
     idleTimeoutMillis: 30000, // Time in ms before an idle connection is closed
-    connectionTimeoutMillis: 2000, 
+    connectionTimeoutMillis: 2000,
 });
 
 
@@ -219,6 +219,23 @@ app.get('/subcategories', async (req, res) => {
         }));
 
         res.status(200).json(subcategoriesWithImageURLs); // Return all subcategories with image URLs
+    } catch (error) {
+        console.error('Error fetching subcategories:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/subcategories/:categoryId', async (req, res) => {
+    const { categoryId } = req.params;
+
+    try {
+        const result = await pool.query('SELECT * FROM subcategory WHERE category_id = $1', [categoryId]);
+        const subcategoriesWithImageURLs = result.rows.map(subcategory => ({
+            ...subcategory,
+            image: subcategory.image ? `${req.protocol}://${req.get('host')}/uploads/${subcategory.image}` : null
+        }));
+
+        res.status(200).json(subcategoriesWithImageURLs); // Return the subcategories with image URLs
     } catch (error) {
         console.error('Error fetching subcategories:', error);
         res.status(500).json({ error: 'Internal server error' });
