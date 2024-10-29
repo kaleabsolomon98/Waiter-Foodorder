@@ -607,7 +607,7 @@ app.use(express.static(path.join(__dirname, "build")));
 
 // Handle client-side routes
 app.get('*', (req, res) => {
-    res.sendFile("This is Food ordering backend");
+    res.send("This is Food ordering backend");
 });
 
 // Start server
