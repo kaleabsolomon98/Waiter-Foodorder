@@ -303,10 +303,17 @@ const MenuRegistration = () => {
                             <div className={styles.field}>
                                 <label>Price</label>
                                 <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     placeholder="Enter Price"
                                     value={newMenuItem.price}
-                                    onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (/^\d*$/.test(value)) { // allows only digits
+                                            setNewMenuItem({ ...newMenuItem, price: value });
+                                        }
+                                    }}
                                     required
                                 />
                             </div>

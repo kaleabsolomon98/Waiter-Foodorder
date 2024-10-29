@@ -427,10 +427,11 @@ app.put('/menus/:id', upload.single('image'), async (req, res) => {
     const id = req.params.id;
     const { name, price, category_id, subcategory_id, printerName, isFridge } = req.body;
     const image = req.file ? req.file.filename : null;
+    const subcategoryId = subcategory_id === "" || 'null' ? null : subcategory_id;
 
     try {
         let query = `UPDATE menu SET name = $1, price = $2, category_id = $3, subcategory_id = $4, "printerName" = $5, "isFridge" = $6`;
-        const queryParams = [name, price, category_id, subcategory_id, printerName, isFridge];
+        const queryParams = [name, price, category_id, subcategoryId, printerName, isFridge];
 
         if (image) {
             query += `, image = $7 WHERE id = $8`;

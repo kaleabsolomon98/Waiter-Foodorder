@@ -1,21 +1,25 @@
 import React, { useContext, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import { assets } from '../../assets/frontend_assets/assets'
 import './FoodItem.css'
 import { StoreContext } from '../../context/StoreContext';
 
 const FoodItem = ({ id, name, price, description, image }) => {
-
+    const navigate = useNavigate();
     // const [itemCount, setItemCount] = useState(0);
     const { cartItems, addToCart, removeFromCart } = useContext(StoreContext);
-    console.log("-------THIS IS ID-----");
-    console.log(id);
-    console.log(name);
     return (
         <div className='food-item'>
             <div className='food-item-img-container'>
                 <img className='food-item-image' src={image} alt='' />
+                {/* Cart Indicator */}
+                {cartItems[id] != null && cartItems[id] != 0 ? (
+                    <div onClick={() => navigate('/cart', { replace: true })} className="cart-indicator">
+                        <span className="cart-text">Added to Cart</span>
+                        <span className="cart-icon">🛒</span>
+                    </div>
+                ) : null}
                 {
-                   
                     !cartItems[id] ? <img className='add' onClick={() => addToCart(id)} src={assets.add_icon_white} alt='' />
                         :
                         <div className='food-item-counter'>

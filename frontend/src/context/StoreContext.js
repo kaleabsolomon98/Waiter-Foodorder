@@ -9,16 +9,17 @@ export const StoreContextProvider = (props) => {
     const [foodList, setFoodList] = useState([]); // State for food items
 
     // Fetch food items when the component mounts
-    useEffect(() => {
-        const fetchFoodItems = async () => {
-            try {
-                const response = await axios.get('http://localhost:4422/menus');
-                setFoodList(response.data);
-            } catch (error) {
-                console.error('Error fetching food items:', error);
-            }
-        };
+    const fetchFoodItems = async () => {
+        try {
+            const response = await axios.get('http://localhost:4422/menus');
+            setFoodList(response.data);
+        } catch (error) {
+            console.error('Error fetching food items:', error);
+        }
+    };
 
+    // Fetch food items on initial mount
+    useEffect(() => {
         fetchFoodItems();
     }, []);
 
@@ -67,6 +68,7 @@ export const StoreContextProvider = (props) => {
         isLoggedIn,
         setIsLoggedIn,
         getTotalCartAmount,
+        fetchFoodItems
     };
 
     return (
