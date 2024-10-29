@@ -15,7 +15,7 @@ const Category = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/categories');
+                const response = await axios.get(`${base_url} categories`);
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -55,14 +55,14 @@ const Category = () => {
 
         try {
             if (editingCategory) {
-                const response = await axios.put(`http://localhost:4422/categories/${editingCategory.id}`, formData, {
+                const response = await axios.put(`${base_url}categories/${editingCategory.id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setCategories(categories.map((item) =>
                     item.id === editingCategory.id ? response.data : item
                 ));
             } else {
-                const response = await axios.post('http://localhost:4422/categories', formData, {
+                const response = await axios.post(`${base_url}categories`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 console.log(response.data);
@@ -79,7 +79,7 @@ const Category = () => {
     const handleDelete = async (id) => {
         setLoadingDeleteId(id);
         try {
-            await axios.delete(`http://localhost:4422/categories/${id}`);
+            await axios.delete(`${base_url}categories/${id}`);
             setCategories(categories.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting category:', error);

@@ -17,7 +17,7 @@ const SubCategory = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/categories');
+                const response = await axios.get(`${base_url}categories`);
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -26,7 +26,7 @@ const SubCategory = () => {
 
         const fetchSubCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/subcategories');
+                const response = await axios.get(`${base_url}subcategores`);
                 setSubCategories(response.data);
             } catch (error) {
                 console.error('Error fetching subcategories:', error);
@@ -74,14 +74,14 @@ const SubCategory = () => {
 
         try {
             if (editingSubCategory) {
-                const response = await axios.put(`http://localhost:4422/subcategories/${editingSubCategory.id}`, formData, {
+                const response = await axios.put(`${base_url}subcategories/${editingSubCategory.id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setSubCategories(subCategories.map((item) =>
                     item.id === editingSubCategory.id ? response.data : item
                 ));
             } else {
-                const response = await axios.post('http://localhost:4422/subcategories', formData, {
+                const response = await axios.post(`${base_url}subcategories`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setSubCategories([...subCategories, response.data]);

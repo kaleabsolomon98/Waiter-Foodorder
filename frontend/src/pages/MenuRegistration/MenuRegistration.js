@@ -20,7 +20,7 @@ const MenuRegistration = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/categories');
+                const response = await axios.get(`${base_url}categories`);
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -29,7 +29,7 @@ const MenuRegistration = () => {
 
         const fetchMenuItems = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/menus');
+                const response = await axios.get(`${base_url}menus`);
                 console.log(response.data);
                 setMenuItems(response.data);
             } catch (error) {
@@ -39,7 +39,7 @@ const MenuRegistration = () => {
 
         const fetchPrinterItems = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/printers');
+                const response = await axios.get(`${base_url}printers`);
                 console.log(response.data);
                 setPrinterItems(response.data);
             } catch (error) {
@@ -120,7 +120,7 @@ const MenuRegistration = () => {
                     item.id === editingMenuItem.id ? { ...item, ...updatedItem } : item
                 ));
             } else {
-                const response = await axios.post('http://localhost:4422/menus', formData, {
+                const response = await axios.post(`${base_url}menus`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 setMenuItems([...menuItems, response.data]);

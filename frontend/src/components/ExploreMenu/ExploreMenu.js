@@ -11,7 +11,7 @@ const ExploreMenu = ({ category, setCategory, subCategory, setSubCategory }) => 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/categories');
+                const response = await axios.get(`${base_url}categories`);
                 setMenuCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -25,7 +25,7 @@ const ExploreMenu = ({ category, setCategory, subCategory, setSubCategory }) => 
     useEffect(() => {
         const fetchSubCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:4422/subcategories');
+                const response = await axios.get(`${base_url}subcategories`);
                 setSubMenuItems(response.data);
             } catch (error) {
                 console.error('Error fetching subcategories:', error);

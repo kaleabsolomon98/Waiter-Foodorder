@@ -11,7 +11,7 @@ export const StoreContextProvider = (props) => {
     // Fetch food items when the component mounts
     const fetchFoodItems = async () => {
         try {
-            const response = await axios.get('http://localhost:4422/menus');
+            const response = await axios.get(`${base_url}menus`);
             setFoodList(response.data);
         } catch (error) {
             console.error('Error fetching food items:', error);
