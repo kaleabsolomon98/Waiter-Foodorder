@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
 import axios from 'axios';
+import baseUrl from '../components/Constants/base_url';
 
 export const StoreContext = createContext(null);
 
@@ -11,7 +12,9 @@ export const StoreContextProvider = (props) => {
     // Fetch food items when the component mounts
     const fetchFoodItems = async () => {
         try {
-            const response = await axios.get(`${base_url}menus`);
+            console.log("----THIS IS CONSOLE.LOG_------------");
+            console.log(baseUrl);
+            const response = await axios.get(`${baseUrl}menus`);
             setFoodList(response.data);
         } catch (error) {
             console.error('Error fetching food items:', error);

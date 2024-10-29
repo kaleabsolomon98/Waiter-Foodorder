@@ -11,8 +11,11 @@ const app = express();
 const port = 4422;
 const path = require('path');
 
-
-app.use(cors());
+app.use(cors({
+    origin: 'https://foodorderingsame.netlify.app', // replace with your client’s origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+}));
 app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.json());
 

@@ -3,6 +3,8 @@ import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import styles from './MenuRegistration.module.css';
+import baseUrl from '../../components/Constants/base_url';
+
 
 const MenuRegistration = () => {
     const [printerItems, setPrinterItems] = useState([]);
@@ -20,7 +22,7 @@ const MenuRegistration = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`${base_url}categories`);
+                const response = await axios.get(`${baseUrl}categories`);
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -29,7 +31,7 @@ const MenuRegistration = () => {
 
         const fetchMenuItems = async () => {
             try {
-                const response = await axios.get(`${base_url}menus`);
+                const response = await axios.get(`${baseUrl}menus`);
                 console.log(response.data);
                 setMenuItems(response.data);
             } catch (error) {
@@ -39,7 +41,7 @@ const MenuRegistration = () => {
 
         const fetchPrinterItems = async () => {
             try {
-                const response = await axios.get(`${base_url}printers`);
+                const response = await axios.get(`${baseUrl}printers`);
                 console.log(response.data);
                 setPrinterItems(response.data);
             } catch (error) {
@@ -110,7 +112,7 @@ const MenuRegistration = () => {
 
         try {
             if (editingMenuItem) {
-                const response = await axios.put(`http://localhost:4422/menus/${editingMenuItem.id}`, formData, {
+                const response = await axios.put(`${baseUrl}menus/${editingMenuItem.id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
 
@@ -120,7 +122,7 @@ const MenuRegistration = () => {
                     item.id === editingMenuItem.id ? { ...item, ...updatedItem } : item
                 ));
             } else {
-                const response = await axios.post(`${base_url}menus`, formData, {
+                const response = await axios.post(`${baseUrl}menus`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 setMenuItems([...menuItems, response.data]);
@@ -139,7 +141,7 @@ const MenuRegistration = () => {
     const handleDelete = async (id) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://localhost:4422/menus/${id}`);
+            await axios.delete(`${baseUrl}menus/${id}`);
             setMenuItems(menuItems.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting menu item:', error);
@@ -150,7 +152,7 @@ const MenuRegistration = () => {
 
     const fetchSubCategories = async (categoryId) => {
         try {
-            const response = await axios.get(`http://localhost:4422/subcategories/${categoryId}`);
+            const response = await axios.get(`${baseUrl}subcategories/${categoryId}`);
             setSubCategories(response.data);
         } catch (error) {
             console.error('Error fetching subcategories:', error);

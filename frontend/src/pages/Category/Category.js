@@ -3,6 +3,7 @@ import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import styles from './Category.module.css';
+import baseUrl from '../../components/Constants/base_url';
 
 const Category = () => {
     const [categories, setCategories] = useState([]);
@@ -15,7 +16,7 @@ const Category = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`${base_url} categories`);
+                const response = await axios.get(`${baseUrl}categories`);
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -55,14 +56,14 @@ const Category = () => {
 
         try {
             if (editingCategory) {
-                const response = await axios.put(`${base_url}categories/${editingCategory.id}`, formData, {
+                const response = await axios.put(`${baseUrl}categories/${editingCategory.id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setCategories(categories.map((item) =>
                     item.id === editingCategory.id ? response.data : item
                 ));
             } else {
-                const response = await axios.post(`${base_url}categories`, formData, {
+                const response = await axios.post(`${baseUrl}categories`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 console.log(response.data);
@@ -79,7 +80,7 @@ const Category = () => {
     const handleDelete = async (id) => {
         setLoadingDeleteId(id);
         try {
-            await axios.delete(`${base_url}categories/${id}`);
+            await axios.delete(`${baseUrl}categories/${id}`);
             setCategories(categories.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting category:', error);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import styles from './SubCategory.module.css';
+import baseUrl from '../../components/Constants/base_url';
 
 const SubCategory = () => {
     const [subCategories, setSubCategories] = useState([]);
@@ -17,7 +18,7 @@ const SubCategory = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`${base_url}categories`);
+                const response = await axios.get(`${baseUrl}categories`);
                 setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -26,7 +27,7 @@ const SubCategory = () => {
 
         const fetchSubCategories = async () => {
             try {
-                const response = await axios.get(`${base_url}subcategores`);
+                const response = await axios.get(`${baseUrl}subcategories`);
                 setSubCategories(response.data);
             } catch (error) {
                 console.error('Error fetching subcategories:', error);
@@ -74,14 +75,14 @@ const SubCategory = () => {
 
         try {
             if (editingSubCategory) {
-                const response = await axios.put(`${base_url}subcategories/${editingSubCategory.id}`, formData, {
+                const response = await axios.put(`${baseUrl}subcategories/${editingSubCategory.id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setSubCategories(subCategories.map((item) =>
                     item.id === editingSubCategory.id ? response.data : item
                 ));
             } else {
-                const response = await axios.post(`${base_url}subcategories`, formData, {
+                const response = await axios.post(`${baseUrl}subcategories`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setSubCategories([...subCategories, response.data]);
@@ -97,7 +98,7 @@ const SubCategory = () => {
     const handleDelete = async (id) => {
         setLoadingDeleteId(id);
         try {
-            await axios.delete(`http://localhost:4422/subcategories/${id}`);
+            await axios.delete(`${baseUrl}/subcategories/${id}`);
             setSubCategories(subCategories.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error deleting subcategory:', error);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './ExploreMenu.css';
+import  baseUrl  from '../Constants/base_url';
 
 const ExploreMenu = ({ category, setCategory, subCategory, setSubCategory }) => {
     const [menuCategories, setMenuCategories] = useState([]);
@@ -11,7 +12,7 @@ const ExploreMenu = ({ category, setCategory, subCategory, setSubCategory }) => 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`${base_url}categories`);
+                const response = await axios.get(`${baseUrl}categories`);
                 setMenuCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -25,7 +26,7 @@ const ExploreMenu = ({ category, setCategory, subCategory, setSubCategory }) => 
     useEffect(() => {
         const fetchSubCategories = async () => {
             try {
-                const response = await axios.get(`${base_url}subcategories`);
+                const response = await axios.get(`${baseUrl}subcategories`);
                 setSubMenuItems(response.data);
             } catch (error) {
                 console.error('Error fetching subcategories:', error);
