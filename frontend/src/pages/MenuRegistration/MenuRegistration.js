@@ -5,6 +5,7 @@ import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import styles from './MenuRegistration.module.css';
 
 const MenuRegistration = () => {
+    const [printerItems, setPrinterItems] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
@@ -36,8 +37,20 @@ const MenuRegistration = () => {
             }
         };
 
+        const fetchPrinterItems = async () => {
+            try {
+                const response = await axios.get('http://localhost:4422/printers');
+                console.log(response.data);
+                setPrinterItems(response.data);
+            } catch (error) {
+                console.error('Error fetching printer items:', error);
+            }
+        };
+
+
         fetchCategories();
         fetchMenuItems();
+        fetchPrinterItems();
     }, []);
 
     const openModal = async (item = null) => {
@@ -69,22 +82,6 @@ const MenuRegistration = () => {
         }
         setIsModalOpen(true);
     };
-
-
-    // const openModal = (item = null) => {
-    //     if (item) {
-    //         setEditingMenuItem(item);
-    //         setNewMenuItem({
-    //             name: item.name, price: item.price, category_id: item.category_id, subcategory_id: item.subcategory_id, image: null, printerName: item.printerName, isFridge: item.isFridge
-    //         });
-    //     } else {
-    //         setEditingMenuItem(null);
-    //         setNewMenuItem({
-    //             name: '', price: '', category_id: '', subcategory_id: '', image: null, printerName: '', isFridge: 'no'
-    //         });
-    //     }
-    //     setIsModalOpen(true);
-    // };
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -231,14 +228,17 @@ const MenuRegistration = () => {
                         </div>
                         <form onSubmit={handleSubmit} className={styles['form-layout']}>
                             <div className={styles.field}>
-                                <label>Printer Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter Printer Name"
+                                <label>Select Printer</label>
+                                <select
                                     value={newMenuItem.printerName}
                                     onChange={(e) => setNewMenuItem({ ...newMenuItem, printerName: e.target.value })}
                                     required
-                                />
+                                >
+                                    <option value="" disabled>Select Printer Location</option>
+                                    {printerItems.map(printer => (
+                                        <option key={printer.id} value={printer.name}>{printer.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className={styles.field}>
                                 <label className={styles.radiolabel}>Is Fridge Item?</label>
