@@ -1,6 +1,7 @@
 
 const express = require('express');
 require('dotenv').config()
+const fs = require('fs');
 const https = require('https');
 const multer = require('multer');
 const cors = require('cors');
@@ -10,6 +11,13 @@ var jwt = require('jsonwebtoken');
 const app = express();
 const port = 4422;
 const path = require('path');
+
+
+
+const sslOptions = {
+    key: fs.readFileSync('certificates/key.pem'), // Replace with the path to your private key
+    cert: fs.readFileSync('certificates/cert.pem'), // Replace with the path to your certificate
+};
 
 app.use(cors({
     origin: 'https://foodorderingsame.netlify.app', // replace with your client’s origin
@@ -35,7 +43,6 @@ const pool = new Pool({
 const JWT_SECRET = 'c09a42022c2b32fc1094cfbb16b156ffc814e2f9aa29fca39ecaff101b1d5731';
 
 var tokens;
-
 
 // Login Route
 app.post('/login', async (req, res) => {
@@ -604,7 +611,11 @@ app.get('*', (req, res) => {
 });
 
 // Start server
+// app.listen(port, () => {
+//     console.log(`Server running on http://localhost:${port}`);
+// });
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
+// Create an HTTPS server
+https.createServer(sslOptions, app).listen(port, () => {
+    console.log(`Server running on https://localhost:${port}`);
+  });
