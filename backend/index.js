@@ -60,21 +60,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/locations', async (req, res) => {
-    const result = await pool.query('SELECT * FROM locations');
-    res.json(result.rows);
-});
 
-app.get('/available-times', async (req, res) => {
-    const { date } = req.query;
-    const result = await pool.query('SELECT * FROM bookings WHERE date = $1', [date]);
-    res.json(result.rows);
-});
-
-app.get('/table-prices', async (req, res) => {
-    const result = await pool.query('SELECT * FROM tables');
-    res.json(result.rows);
-});
 
 
 
@@ -88,6 +74,18 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+
+app.get('/printers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM printerName');
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error retrieving data');
+    }
+});
+
 
 app.post('/categories', upload.single('image'), async (req, res) => {
     const { name, description } = req.body;
