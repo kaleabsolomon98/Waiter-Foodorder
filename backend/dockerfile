@@ -1,7 +1,6 @@
 FROM node:16
 WORKDIR /usr/src/app
 COPY package*.json index.js
-COPY .env ./
 RUN npm install
 EXPOSE 4422
 CMD ["node","index.js"]
