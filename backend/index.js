@@ -621,6 +621,38 @@ app.get('/order-details/:id', async (req, res) => {
 });
 
 
+// DELETE an order and its associated order details
+app.delete('/orders/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Begin transaction
+        await pool.query('BEGIN');
+
+        // Delete associated order details first
+        const deleteDetailsResult = await pool.query('DELETE FROM tblReceipt_Details WHERE Receipt_ID = $1', [id]);
+
+        // Then delete the order
+        const deleteOrderResult = await pool.query('DELETE FROM tblReceipt WHERE Receipt_ID = $1', [id]);
+
+        if (deleteOrderResult.rowCount === 0) {
+            // Rollback if the order was not found
+            await pool.query('ROLLBACK');
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Commit the transaction if both deletions are successful
+        await pool.query('COMMIT');
+        res.status(200).json({ message: 'Order and its details deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        // Rollback in case of any error
+        await pool.query('ROLLBACK');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 // Login Route
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;

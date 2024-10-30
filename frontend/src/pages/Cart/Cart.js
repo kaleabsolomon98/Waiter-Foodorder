@@ -3,10 +3,12 @@ import axios from 'axios';
 import './Cart.css';
 import { StoreContext } from '../../context/StoreContext';
 import baseUrl from '../../components/Constants/base_url';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const Cart = () => {
   const { cartItems, foodList, removeFromCart, getTotalCartAmount } = useContext(StoreContext);
   const [tableNumber, setTableNumber] = useState('');
+  const [loading, setLoading] = useState(false); // Loading state
 
   const handlePlaceOrder = async () => {
     const totalAmount = getTotalCartAmount();
@@ -39,18 +41,27 @@ const Cart = () => {
       }));
 
     try {
+      setLoading(true); // Set loading to true when starting the order process
       const response = await axios.post(`${baseUrl}orders`, {
         receiptData,
         receiptDetails
       });
 
       if (response.status === 200) {
+        setLoading(false);
         alert("Order placed successfully!");
+
       } else {
+        setLoading(false);
         console.error("Failed to place order.");
+        alert("Failed to place order. Please try again."); // Show alert on failure
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error:", error);
+      alert("An error occurred while placing the order. Please try again."); // Show alert on error
+    } finally {
+      setLoading(false); // Set loading to false after the order process completes
     }
   };
 
@@ -83,6 +94,7 @@ const Cart = () => {
               </div>
             );
           }
+          return null; // Ensure we return something if condition is false
         })}
       </div>
       <div className='cart-bottom'>
@@ -95,7 +107,9 @@ const Cart = () => {
             </div>
             <hr />
           </div>
-          <button onClick={handlePlaceOrder}>PLACE ORDER</button>
+          <button onClick={handlePlaceOrder} disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : "PLACE ORDER"}
+          </button>
         </div>
         <div className='cart-promocode'>
           <div>
