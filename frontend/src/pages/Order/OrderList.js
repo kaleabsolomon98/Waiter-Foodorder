@@ -17,6 +17,7 @@ const OrderList = () => {
             setLoading(true);
             try {
                 const response = await axios.get(`${baseUrl}orders`);
+                console.log("---THIS IS RESPONSE DATA-----", response.data);
                 if (Array.isArray(response.data)) {
                     setOrders(response.data);
                 } else {

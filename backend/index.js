@@ -567,11 +567,12 @@ app.post('/orders', async (req, res) => {
 });
 
 
-// GET /api/orders - Retrieve selected order details
+// GET /api/orders - Retrieve all orders
 app.get('/orders', async (req, res) => {
-    // Define the query constant within the route for selected columns
+    // Define the query constant to fetch selected columns from tblReceipt
     const FETCH_SELECTED_ORDERS_QUERY = `
       SELECT 
+        Receipt_ID AS "id",    
         Order_Nbr AS "orderNumber", 
         Receipt_Date AS "date", 
         Receipt_Time AS "time", 
@@ -589,6 +590,36 @@ app.get('/orders', async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch orders' });
     }
 });
+
+
+// GET /api/order-details/:id - Retrieve details of a specific order
+app.get('/order-details/:id', async (req, res) => {
+    const { id } = req.params; // Extract the order ID from the URL parameters
+
+    // Define the query constant within the route for selected columns
+    const FETCH_ORDER_DETAILS_QUERY = `
+      SELECT 
+        Receipt_DetailID, 
+        Item_Name, 
+        Category, 
+        Quantity, 
+        Price, 
+        Sub_Total, 
+        Status, 
+        Note
+      FROM tblReceipt_Details
+      WHERE Receipt_ID = $1
+    `;
+
+    try {
+        const result = await pool.query(FETCH_ORDER_DETAILS_QUERY, [id]); // Execute the query with the provided ID
+        res.status(200).json(result.rows); // Send the retrieved rows as the response
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ message: 'Failed to fetch order details' });
+    }
+});
+
 
 // Login Route
 app.post('/login', async (req, res) => {
