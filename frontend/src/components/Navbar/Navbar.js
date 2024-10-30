@@ -50,6 +50,7 @@ const Navbar = () => {
         <Link to='/category' onClick={() => setMenu('category')} className={menu === 'category' ? 'active' : ''}>Category</Link>
         <Link to='/subcategory' onClick={() => setMenu('subCategory')} className={menu === 'subCategory' ? 'active' : ''}>Sub Category</Link>
         <Link to='/menu' onClick={() => setMenu('addMenu')} className={menu === 'addMenu' ? 'active' : ''}>Add Menu</Link>
+        <Link to='/order' onClick={() => setMenu('order')} className={menu === 'order' ? 'active' : ''}>Orders</Link>
       </ul>
       <div className="navbar-right">
         <div onClick={() => navigate('/cart', { replace: true })} className='navbar-search-icon'>

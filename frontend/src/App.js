@@ -10,6 +10,7 @@ import './App.css';
 import MenuRegistration from './pages/MenuRegistration/MenuRegistration';
 import SubCategory from './pages/SubCategory/SubCategory';
 import Category from './pages/Category/Category';
+import OrderList from './pages/Order/OrderList';
 
 const App = () => {
   const { isLoggedIn } = useContext(StoreContext);
@@ -26,7 +27,7 @@ const App = () => {
         <Route path='/category' element={isLoggedIn ? <Category /> : <Navigate to="/" replace />} />
         <Route path='/subcategory' element={isLoggedIn ? <SubCategory /> : <Navigate to="/" replace />} />
         <Route path='/cart' element={isLoggedIn ? <Cart /> : <Navigate to="/" replace />} />
-        <Route path='/order' element={isLoggedIn ? <Placeorder /> : <Navigate to="/" replace />} />
+        <Route path='/order' element={isLoggedIn ? <OrderList /> : <Navigate to="/" replace />} />
       </Routes>
     </div>
   );
