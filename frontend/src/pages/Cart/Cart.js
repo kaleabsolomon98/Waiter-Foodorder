@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import './Cart.css';
 import { StoreContext } from '../../context/StoreContext';
+import baseUrl from '../../components/Constants/base_url';
 
 const Cart = () => {
   const { cartItems, foodList, removeFromCart, getTotalCartAmount } = useContext(StoreContext);
@@ -38,7 +39,7 @@ const Cart = () => {
       }));
 
     try {
-      const response = await axios.post('/api/orders', {
+      const response = await axios.post(`${baseUrl}orders`, {
         receiptData,
         receiptDetails
       });
@@ -100,9 +101,9 @@ const Cart = () => {
           <div>
             <p>Enter the table number here</p>
             <div className='cart-promocode-input'>
-              <input 
-                type='text' 
-                placeholder='Table number' 
+              <input
+                type='text'
+                placeholder='Table number'
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
               />

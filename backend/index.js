@@ -19,11 +19,13 @@ const sslOptions = {
     cert: fs.readFileSync('certificates/cert.pem'), // Replace with the path to your certificate
 };
 
-app.use(cors({
-    origin: 'https://foodorderingsame.netlify.app', // replace with your client’s origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-}));
+app.use(cors(
+    // {
+    // origin: 'https://foodorderingsame.netlify.app', // replace with your client’s origin
+    // methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    // credentials: true,
+// }
+));
 app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.json());
 
@@ -666,12 +668,12 @@ app.get('*', (req, res) => {
     res.send("This is Food ordering backend");
 });
 
-// Start server
-// app.listen(port, () => {
-//     console.log(`Server running on http://localhost:${port}`);
-// });
+//Start server
+app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+});
 
 // Create an HTTPS server
-https.createServer(sslOptions, app).listen(port, () => {
-    console.log(`Server running on https://localhost:${port}`);
-  });
+// https.createServer(sslOptions, app).listen(port, () => {
+//     console.log(`Server running on https://localhost:${port}`);
+//   });
