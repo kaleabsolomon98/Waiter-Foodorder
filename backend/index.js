@@ -24,7 +24,7 @@ app.use(cors(
     // origin: 'https://foodorderingsame.netlify.app', // replace with your client’s origin
     // methods: ['GET', 'POST', 'PUT', 'DELETE'],
     // credentials: true,
-// }
+    // }
 ));
 app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.json());
@@ -513,59 +513,82 @@ app.delete('/menus/:id', async (req, res) => {
 
 app.post('/orders', async (req, res) => {
     const { receiptData, receiptDetails } = req.body;
-  
+
     try {
-      // Begin transaction
-      await pool.query('BEGIN');
-  
-      // Insert into tblReceipt
-      const receiptQuery = `
+        // Begin transaction
+        await pool.query('BEGIN');
+
+        // Insert into tblReceipt
+        const receiptQuery = `
         INSERT INTO tblReceipt (Receipt_Date, Table_Number, Amount, Status, UserID, Waiter, Discount)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING Receipt_ID
       `;
-      const receiptValues = [
-        receiptData.Receipt_Date,
-        receiptData.Table_Number,
-        receiptData.Amount,
-        receiptData.Status,
-        receiptData.UserID,
-        receiptData.Waiter,
-        receiptData.Discount
-      ];
-      const receiptResult = await pool.query(receiptQuery, receiptValues);
-      const receiptId = receiptResult.rows[0].receipt_id;
-  
-      // Insert each item in receiptDetails into tblReceipt_Details
-      const detailQuery = `
+        const receiptValues = [
+            receiptData.Receipt_Date,
+            receiptData.Table_Number,
+            receiptData.Amount,
+            receiptData.Status,
+            receiptData.UserID,
+            receiptData.Waiter,
+            receiptData.Discount
+        ];
+        const receiptResult = await pool.query(receiptQuery, receiptValues);
+        const receiptId = receiptResult.rows[0].receipt_id;
+
+        // Insert each item in receiptDetails into tblReceipt_Details
+        const detailQuery = `
         INSERT INTO tblReceipt_Details (Receipt_ID, Item_Name, Category, Quantity, Price, Sub_Total, Status, kitchen_tv)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `;
-      for (const item of receiptDetails) {
-        const detailValues = [
-          receiptId,
-          item.Item_Name,
-          item.Category,
-          item.Quantity,
-          item.Price,
-          item.Sub_Total,
-          item.Status,
-          item.kitchen_tv
-        ];
-        await pool.query(detailQuery, detailValues);
-      }
-  
-      // Commit transaction
-      await pool.query('COMMIT');
-  
-      res.status(200).json({ message: 'Order placed successfully' });
-    } catch (error) {
-      await pool.query('ROLLBACK');
-      console.error('Error placing order:', error);
-      res.status(500).json({ message: 'Failed to place order' });
-    }
-  });
+        for (const item of receiptDetails) {
+            const detailValues = [
+                receiptId,
+                item.Item_Name,
+                item.Category,
+                item.Quantity,
+                item.Price,
+                item.Sub_Total,
+                item.Status,
+                item.kitchen_tv
+            ];
+            await pool.query(detailQuery, detailValues);
+        }
 
+        // Commit transaction
+        await pool.query('COMMIT');
+
+        res.status(200).json({ message: 'Order placed successfully' });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error placing order:', error);
+        res.status(500).json({ message: 'Failed to place order' });
+    }
+});
+
+
+// GET /api/orders - Retrieve selected order details
+app.get('/orders', async (req, res) => {
+    // Define the query constant within the route for selected columns
+    const FETCH_SELECTED_ORDERS_QUERY = `
+      SELECT 
+        Order_Nbr AS "orderNumber", 
+        Receipt_Date AS "date", 
+        Receipt_Time AS "time", 
+        Table_Number AS "tableNumber", 
+        Amount, 
+        Status
+      FROM tblReceipt
+    `;
+
+    try {
+        const result = await pool.query(FETCH_SELECTED_ORDERS_QUERY);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ message: 'Failed to fetch orders' });
+    }
+});
 
 // Login Route
 app.post('/login', async (req, res) => {

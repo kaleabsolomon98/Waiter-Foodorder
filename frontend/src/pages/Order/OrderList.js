@@ -7,7 +7,7 @@ import baseUrl from '../../components/Constants/base_url';
 import { useNavigate } from 'react-router-dom';
 
 const OrderList = () => {
-    const [orders, setOrders] = useState([]); // Initialize as an empty array
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const navigate = useNavigate();
@@ -21,11 +21,11 @@ const OrderList = () => {
                     setOrders(response.data);
                 } else {
                     console.error('Unexpected response format:', response.data);
-                    setOrders([]); // Set to empty array if response format is unexpected
+                    setOrders([]);
                 }
             } catch (error) {
                 console.error('Error fetching orders:', error);
-                setOrders([]); // Set to empty array on error
+                setOrders([]);
             } finally {
                 setLoading(false);
             }
@@ -50,30 +50,41 @@ const OrderList = () => {
         navigate(`/order-details/${id}`);
     };
 
+    // Helper function to format time (hour and minute only)
+    const formatTime = (timeString) => {
+        const [hours, minutes] = timeString.split(':'); // Get hours and minutes
+        return `${hours}:${minutes}`; // Return as HH:MM
+    };
+
     return (
         <div className={styles.container}>
             <h2>Orders</h2>
-            {loading ? (
-                <CircularProgress />
-            ) : (
-                <table className={styles.table}>
-                    <thead>
+
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Table Number</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {loading ? (
                         <tr>
-                            <th>Order Number</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Table Number</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <td colSpan="7" style={{ textAlign: 'center' }}>
+                                <CircularProgress />
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map((order) => (
+                    ) : (
+                        orders.map((order) => (
                             <tr key={order.id} onClick={() => handleRowClick(order.id)}>
                                 <td>{order.orderNumber}</td>
                                 <td>{new Date(order.date).toLocaleDateString()}</td>
-                                <td>{new Date(order.time).toLocaleTimeString()}</td>
+                                <td>{formatTime(order.time)}</td>
                                 <td>{order.tableNumber}</td>
                                 <td>${(parseFloat(order.amount) || 0).toFixed(2)}</td>
                                 <td>{order.status}</td>
@@ -94,10 +105,10 @@ const OrderList = () => {
                                     </button>
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        ))
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 };
