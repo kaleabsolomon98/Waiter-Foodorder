@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import Navbar from './components/Navbar/Navbar';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import Placeorder from './pages/PlaceOrder/Placeorder';
 import Home from './pages/Home/Home';
 import Cart from './pages/Cart/Cart';
 import Login from './pages/Login/Login';
@@ -11,6 +10,7 @@ import MenuRegistration from './pages/MenuRegistration/MenuRegistration';
 import SubCategory from './pages/SubCategory/SubCategory';
 import Category from './pages/Category/Category';
 import OrderList from './pages/Order/OrderList';
+import OrderDetails from './pages/OrderDetail/OrderDetail';
 
 const App = () => {
   const { isLoggedIn } = useContext(StoreContext);
@@ -28,6 +28,7 @@ const App = () => {
         <Route path='/subcategory' element={isLoggedIn ? <SubCategory /> : <Navigate to="/" replace />} />
         <Route path='/cart' element={isLoggedIn ? <Cart /> : <Navigate to="/" replace />} />
         <Route path='/order' element={isLoggedIn ? <OrderList /> : <Navigate to="/" replace />} />
+        <Route path='/order-details/:id' element={isLoggedIn ? <OrderDetails /> : <Navigate to="/" replace />} />
       </Routes>
     </div>
   );
