@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import './Cart.css';
 import { StoreContext } from '../../context/StoreContext';
@@ -8,12 +8,37 @@ import CircularProgress from '@mui/material/CircularProgress';
 const Cart = () => {
   const { cartItems, foodList, removeFromCart, getTotalCartAmount } = useContext(StoreContext);
   const [tableNumber, setTableNumber] = useState('');
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
+  const [tables, setTables] = useState([]); // All tables fetched from backend
+  const [selectedGroup, setSelectedGroup] = useState(1); // Default to group 1
+  const [groups, setGroups] = useState([]); // Array to hold unique group IDs
+  const [selectedTable, setSelectedTable] = useState(null); // Track selected table number
 
 
+  // Fetch tables from backend
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const response = await axios.get(`${baseUrl}tables`);
+        setTables(response.data);
+
+        // Extract unique group IDs
+        const uniqueGroups = Array.from(new Set(response.data.map(table => table.groupid)));
+        setGroups(uniqueGroups);
+      } catch (error) {
+        console.error("Failed to fetch tables:", error);
+      }
+    };
+
+    fetchTables();
+  }, []);
+
+  // Handle clicking on a table number (replace and highlight)
   const handleTableNumberClick = (number) => {
-    setTableNumber((prev) => prev + number);
+    setTableNumber(number.toString()); // Replace with the new number
+    setSelectedTable(number); // Set selected table number
   };
+
 
   const clearTableNumber = () => {
     setTableNumber('');
@@ -50,29 +75,26 @@ const Cart = () => {
       }));
 
     try {
-      setLoading(true); // Set loading to true when starting the order process
+      setLoading(true);
       const response = await axios.post(`${baseUrl}orders`, {
         receiptData,
         receiptDetails
       });
 
       if (response.status === 200) {
-        setLoading(false);
         alert("Order placed successfully!");
-
       } else {
-        setLoading(false);
-        console.error("Failed to place order.");
-        alert("Failed to place order. Please try again."); // Show alert on failure
+        alert("Failed to place order. Please try again.");
       }
     } catch (error) {
-      setLoading(false);
-      console.error("Error:", error);
-      alert("An error occurred while placing the order. Please try again."); // Show alert on error
+      alert("An error occurred while placing the order. Please try again.");
     } finally {
-      setLoading(false); // Set loading to false after the order process completes
+      setLoading(false);
     }
   };
+
+  // Filter tables by selected group
+  const filteredTables = tables.filter(table => table.groupid === selectedGroup);
 
   return (
     <div className='cart'>
@@ -103,9 +125,10 @@ const Cart = () => {
               </div>
             );
           }
-          return null; // Ensure we return something if condition is false
+          return null;
         })}
       </div>
+
       <div className='cart-bottom'>
         <div className='cart-total'>
           <h2>Cart Totals</h2>
@@ -120,6 +143,7 @@ const Cart = () => {
             {loading ? <CircularProgress size={24} /> : "PLACE ORDER"}
           </button>
         </div>
+
         <div className='cart-promocode'>
           <div>
             <p>Enter the table number here</p>
@@ -131,13 +155,31 @@ const Cart = () => {
                 onChange={(e) => setTableNumber(e.target.value)}
               />
             </div>
-            <div className='table-number-grid'>
-              {Array.from({ length: 15 }, (_, i) => i + 1).map((number) => (
-                <button key={number} onClick={() => handleTableNumberClick(number.toString())}>
-                  {number}
+
+            {/* Group selection buttons */}
+            <div className='group-buttons'>
+              {groups.map(groupID => (
+                <button
+                  key={groupID}
+                  className={selectedGroup === groupID ? 'active group-button' : 'group-button'}
+                  onClick={() => setSelectedGroup(groupID)}
+                >
+                  Group {groupID}
                 </button>
               ))}
-              <button onClick={clearTableNumber}>Clear</button>
+            </div>
+
+            {/* Table numbers grid */}
+            <div className='table-number-grid'>
+              {filteredTables.map(table => (
+                <button
+                  key={table.table_number}
+                  onClick={() => handleTableNumberClick(table.table_number)}
+                  className={`table-button ${table.table_number === selectedTable ? 'selected' : ''} ${table.status === 'Available' ? 'available' : 'occupied'}`}
+                >
+                  {table.table_number}
+                </button>
+              ))}
             </div>
           </div>
         </div>

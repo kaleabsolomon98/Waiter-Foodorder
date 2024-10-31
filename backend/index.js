@@ -555,16 +555,26 @@ app.post('/orders', async (req, res) => {
             await pool.query(detailQuery, detailValues);
         }
 
+        // Update the status of the table in tblTables to 'Occupied'
+        const updateTableStatusQuery = `
+        UPDATE tblTables
+        SET Status = 'Occupied'
+        WHERE Table_Number = $1
+      `;
+        await pool.query(updateTableStatusQuery, [receiptData.Table_Number]);
+
         // Commit transaction
         await pool.query('COMMIT');
 
         res.status(200).json({ message: 'Order placed successfully' });
     } catch (error) {
+        // Rollback transaction in case of error
         await pool.query('ROLLBACK');
         console.error('Error placing order:', error);
         res.status(500).json({ message: 'Failed to place order' });
     }
 });
+
 
 
 // GET /api/orders - Retrieve all orders
@@ -672,6 +682,30 @@ app.post('/login', async (req, res) => {
         res.status(500).send({ message: 'Internal server error' });
     }
 });
+
+app.get('/tables', async (req, res) => {
+    // Define the query as a constant within the route
+    const GET_TABLES_QUERY = 'SELECT Table_Number, Status, GroupID FROM tblTables';
+
+    try {
+        // Execute the query
+        const result = await pool.query(GET_TABLES_QUERY);
+        res.status(200).json(result.rows);
+        // Ensure that the result is structured as expected
+        // if (Array.isArray(result) && result.length > 0) {
+        //     const [rows] = result; // Destructure the rows if the result is valid
+        //     res.json(rows); // Send the query result as JSON
+        // } else {
+        //     // Handle cases where the result is not as expected
+        //     console.error('Unexpected query result:', result);
+        //     res.status(404).json({ message: 'No tables found' }); // Return a 404 status if no data found
+        // }
+    } catch (error) {
+        console.error('Database query error:', error);
+        res.status(500).json({ message: 'Server error' }); // Return a server error on exception
+    }
+});
+
 
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;

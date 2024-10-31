@@ -107,51 +107,130 @@
     }
 }
 
-.table-number-calculator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+
+
+
+
+/* Table buttons */
+.table-button {
+    padding: 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
 }
 
-.table-number-display {
-    font-size: 1.5rem;
-    padding: 8px;
-    border: 1px solid #ccc;
-    width: 100%;
-    text-align: center;
+.available {
+    background-color: #ffdfac;
+    /* Light yellow for available tables */
+    color: black;
+    /* Black text for contrast */
+}
+
+.occupied {
+    background-color: red;
+    /* Red for occupied or unavailable tables */
+}
+
+/* Group button styling */
+.group-button {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    /* Soft gradient for modern look */
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    /* Rounded corners for a modern feel */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Soft shadow for depth */
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    /* Smooth transition */
+    font-size: 1rem;
+    /* Slightly larger text for better readability */
+    margin-right: 10px;
+    /* Add gap between buttons */
     margin-bottom: 10px;
+    /* Add space between rows for mobile view */
 }
 
+.group-button:hover {
+    background: linear-gradient(135deg, #f093fb 0%, #fc6a8a 100%);
+    /* Slight change on hover */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    /* Increase shadow on hover */
+}
+
+.group-button:focus {
+    outline: none;
+    /* Remove default outline */
+}
+
+.active {
+    background: linear-gradient(135deg, #f093fb 0%, #ff6347 100%);
+    /* Tomato color for active state */
+    border: 2px solid white;
+    /* Highlight the active button with a border */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    /* Stronger shadow for active button */
+}
+
+/* Grid layout for group buttons */
+.group-buttons {
+    display: flex;
+    /* Flexbox for better spacing and alignment */
+    flex-wrap: wrap;
+    /* Allow buttons to wrap on smaller screens */
+    gap: 15px;
+    /* Use flexbox gap for consistent spacing */
+    margin-bottom: 20px;
+    /* Margin at the bottom for breathing space */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .group-button {
+        padding: 10px 15px;
+        /* Adjust padding for smaller screens */
+        font-size: 0.9rem;
+        /* Slightly smaller text on smaller screens */
+    }
+}
+
+
+.active {
+    border: 2px solid white;
+    /* Highlight the active group button */
+}
+
+/* Rest of your grid and layout styles */
 .table-number-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    /* 5 columns per row */
     gap: 10px;
 }
 
+/* Responsive styling */
 @media (max-width: 1024px) {
     .table-number-grid {
         grid-template-columns: repeat(4, 1fr);
-        /* 4 columns for medium screens */
     }
 }
 
 @media (max-width: 768px) {
     .table-number-grid {
         grid-template-columns: repeat(3, 1fr);
-        /* 3 columns for tablets */
     }
 }
 
 @media (max-width: 480px) {
     .table-number-grid {
         grid-template-columns: repeat(2, 1fr);
-        /* 2 columns for smaller mobile screens */
     }
 }
 
-.table-number-grid button {
-    padding: 15px;
-    font-size: 1.2rem;
-    cursor: pointer;
+.table-button.selected {
+    background-color: green;
+    color: white;
 }
