@@ -10,6 +10,15 @@ const Cart = () => {
   const [tableNumber, setTableNumber] = useState('');
   const [loading, setLoading] = useState(false); // Loading state
 
+
+  const handleTableNumberClick = (number) => {
+    setTableNumber((prev) => prev + number);
+  };
+
+  const clearTableNumber = () => {
+    setTableNumber('');
+  };
+
   const handlePlaceOrder = async () => {
     const totalAmount = getTotalCartAmount();
 
@@ -121,6 +130,14 @@ const Cart = () => {
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
               />
+            </div>
+            <div className='table-number-grid'>
+              {Array.from({ length: 15 }, (_, i) => i + 1).map((number) => (
+                <button key={number} onClick={() => handleTableNumberClick(number.toString())}>
+                  {number}
+                </button>
+              ))}
+              <button onClick={clearTableNumber}>Clear</button>
             </div>
           </div>
         </div>

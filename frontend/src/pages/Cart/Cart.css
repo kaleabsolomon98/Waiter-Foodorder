@@ -41,6 +41,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    margin-bottom: 5px;
 }
 
 .cart-total-details {
@@ -77,6 +78,7 @@
     align-items: center;
     background-color: #eaeaea;
     border-radius: 4px;
+    margin-bottom: 10px;
 }
 
 .cart-promocode-input input {
@@ -95,11 +97,61 @@
     border-radius: 4px;
 }
 
-@media(max-width:750px){
-    .cart-bottom{
-        flex-direction:column-reverse;
+@media(max-width:750px) {
+    .cart-bottom {
+        flex-direction: column-reverse;
     }
-    .cart-promocode{
+
+    .cart-promocode {
         justify-content: start;
     }
+}
+
+.table-number-calculator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.table-number-display {
+    font-size: 1.5rem;
+    padding: 8px;
+    border: 1px solid #ccc;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.table-number-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    /* 5 columns per row */
+    gap: 10px;
+}
+
+@media (max-width: 1024px) {
+    .table-number-grid {
+        grid-template-columns: repeat(4, 1fr);
+        /* 4 columns for medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .table-number-grid {
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 columns for tablets */
+    }
+}
+
+@media (max-width: 480px) {
+    .table-number-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columns for smaller mobile screens */
+    }
+}
+
+.table-number-grid button {
+    padding: 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
 }
