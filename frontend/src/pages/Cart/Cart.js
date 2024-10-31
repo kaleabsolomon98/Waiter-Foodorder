@@ -6,7 +6,7 @@ import baseUrl from '../../components/Constants/base_url';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const Cart = () => {
-  const { cartItems, foodList, removeFromCart, getTotalCartAmount } = useContext(StoreContext);
+  const { userId, cartItems, foodList, removeFromCart, getTotalCartAmount } = useContext(StoreContext);
   const [tableNumber, setTableNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [tables, setTables] = useState([]); // All tables fetched from backend
@@ -94,7 +94,14 @@ const Cart = () => {
   };
 
   // Filter tables by selected group
-  const filteredTables = tables.filter(table => table.groupid === selectedGroup);
+  // const filteredTables = tables.filter(table => table.groupid === selectedGroup);
+  // Filter and sort tables by selected group and status
+  // Filter and sort tables by selected group and table number
+  const filteredTables = tables
+    .filter(table => table.groupid === selectedGroup)
+    .sort((a, b) => a.table_number - b.table_number);
+
+
 
   return (
     <div className='cart'>
@@ -162,7 +169,11 @@ const Cart = () => {
                 <button
                   key={groupID}
                   className={selectedGroup === groupID ? 'active group-button' : 'group-button'}
-                  onClick={() => setSelectedGroup(groupID)}
+                  onClick={() => {
+                    setSelectedTable(null);
+                    setTableNumber('');
+                    setSelectedGroup(groupID)
+                  }}
                 >
                   Group {groupID}
                 </button>

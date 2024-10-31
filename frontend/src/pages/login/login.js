@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { StoreContext } from '../../context/StoreContext';
 import './Login.css';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const { setIsLoggedIn } = useContext(StoreContext);
+    const { setIsLoggedIn,setUserId } = useContext(StoreContext);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false); // Track loading state
     const navigate = useNavigate();
@@ -17,9 +17,16 @@ const Login = () => {
         // Simulate login validation delay
         setTimeout(() => {
             if (password === '1234') {
+                setUserId(1);
                 setIsLoggedIn(true);
                 navigate('/home', { replace: true });
-            } else {
+            }
+            else if (password === '12345') {
+                setUserId(2);
+                setIsLoggedIn(true);
+                navigate('/home', { replace: true });
+            }
+            else {
                 alert("Invalid password");
             }
             setLoading(false); // Stop loading after process

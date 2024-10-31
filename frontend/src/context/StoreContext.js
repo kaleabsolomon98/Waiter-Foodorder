@@ -8,6 +8,8 @@ export const StoreContextProvider = (props) => {
     const [cartItems, setCartItems] = useState({});
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [foodList, setFoodList] = useState([]); // State for food items
+    const [userId, setUserId] = useState(null); // State for food items
+
 
     // Fetch food items when the component mounts
     const fetchFoodItems = async () => {
@@ -71,7 +73,8 @@ export const StoreContextProvider = (props) => {
         isLoggedIn,
         setIsLoggedIn,
         getTotalCartAmount,
-        fetchFoodItems
+        fetchFoodItems,
+        setUserId
     };
 
     return (

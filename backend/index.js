@@ -636,8 +636,28 @@ app.delete('/orders/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
+
         // Begin transaction
         await pool.query('BEGIN');
+
+        const updateTableStatusQuery = `
+        UPDATE tblTables
+        SET Status = 'Available'
+        WHERE Table_Number = $1
+      `;
+
+        const orderResult = await pool.query('SELECT Table_Number FROM tblReceipt WHERE Receipt_ID = $1', [id]);
+
+        const tableNumber = orderResult.rows[0].table_number.trim();
+
+        console.log(tableNumber);
+        await pool.query(
+            'UPDATE tbltables SET status = $1 WHERE table_number = $2',
+            ['Available', tableNumber]
+        );
+
+
+        // await pool.query(updateTableStatusQuery, ["1"]);
 
         // Delete associated order details first
         const deleteDetailsResult = await pool.query('DELETE FROM tblReceipt_Details WHERE Receipt_ID = $1', [id]);
@@ -645,14 +665,20 @@ app.delete('/orders/:id', async (req, res) => {
         // Then delete the order
         const deleteOrderResult = await pool.query('DELETE FROM tblReceipt WHERE Receipt_ID = $1', [id]);
 
+
+
         if (deleteOrderResult.rowCount === 0) {
             // Rollback if the order was not found
             await pool.query('ROLLBACK');
             return res.status(404).json({ error: 'Order not found' });
         }
 
+
         // Commit the transaction if both deletions are successful
         await pool.query('COMMIT');
+
+
+
         res.status(200).json({ message: 'Order and its details deleted successfully' });
     } catch (error) {
         console.error('Error deleting order:', error);
