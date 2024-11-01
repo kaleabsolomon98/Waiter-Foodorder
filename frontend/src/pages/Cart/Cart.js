@@ -13,6 +13,8 @@ const Cart = () => {
   const [selectedGroup, setSelectedGroup] = useState(1); // Default to group 1
   const [groups, setGroups] = useState([]); // Array to hold unique group IDs
   const [selectedTable, setSelectedTable] = useState(null); // Track selected table number
+  const [orderDetails, setOrderDetails] = useState([]);
+
 
 
   // Fetch tables from backend
@@ -20,8 +22,6 @@ const Cart = () => {
     const fetchTables = async () => {
       try {
         const response = await axios.get(`${baseUrl}tables`);
-        console.log('-------KALEAB SOLOMON---------');
-        console.log(response.data);
         setTables(response.data);
         // Extract unique group IDs
         const uniqueGroups = Array.from(new Set(response.data.map(table => table.groupid)));
@@ -40,6 +40,16 @@ const Cart = () => {
     setSelectedTable(number); // Set selected table number
   };
 
+  const fetchOrder = async (number) => {
+    console.log("--IT IS ENTERED------");
+    try {
+      const response = await axios.get(`${baseUrl}order-details-by-table/${number}`); // Assuming `number` is the table number
+      setOrderDetails(response.data); // Store the fetched order details
+    } catch (error) {
+      console.error("Failed to fetch order details:", error);
+      setOrderDetails([]); // Reset order details in case of error
+    }
+  }
 
   const clearTableNumber = () => {
     setTableNumber('');
@@ -193,6 +203,7 @@ const Cart = () => {
                       handleTableNumberClick(table.table_number);  // Allow selection for available tables
                     } else if (userId === table.userid) {
                       handleTableNumberClick(table.table_number);
+                      fetchOrder(table.table_number);
                       // Show alert for occupied tables
                     } else {
                       alert("This table is occupied with an order.");
@@ -205,6 +216,41 @@ const Cart = () => {
               ))}
             </div>
           </div>
+        </div>
+        <div className="order-details-section">
+          {Array.isArray(orderDetails) && orderDetails.length > 0 ? (
+            <>
+              <h2>Order Details</h2>
+              <table className="order-details-table">
+                <thead>
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Sub Total</th>
+                    <th>Status</th>
+                    <th>Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderDetails.map((order, index) => (
+                    <tr key={index}>
+                      <td>{order.item_name}</td>
+                      <td>{order.category}</td>
+                      <td>{order.quantity}</td>
+                      <td>${order.price}</td>
+                      <td>${order.sub_total}</td>
+                      <td>{order.status === 1 ? "Completed" : "Pending"}</td>
+                      <td>{order.note || "N/A"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <p>No order details available.</p>
+          )}
         </div>
       </div>
     </div >

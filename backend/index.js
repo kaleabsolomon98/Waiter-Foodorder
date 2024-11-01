@@ -630,6 +630,51 @@ app.get('/order-details/:id', async (req, res) => {
 });
 
 
+// GET /api/order-details-by-table/:tableNumber - Retrieve order details by table number
+app.get('/order-details-by-table/:tableNumber', async (req, res) => {
+    console.log("--ENTERED HERE-------");
+    const { tableNumber } = req.params; // Extract table number from the URL parameters
+
+    // Define the query to fetch order details by joining tblReceipt and tblReceipt_Details
+    const FETCH_ORDER_DETAILS_BY_TABLE_QUERY = `
+      SELECT 
+        rd.Receipt_DetailID AS "detailId",
+        r.Receipt_ID AS "receiptId",
+        r.Order_Nbr AS "orderNumber",
+        r.Receipt_Date AS "date",
+        r.Receipt_Time AS "time",
+        r.Table_Number AS "tableNumber",
+        rd.Item_Name AS "itemName",
+        rd.Category AS "category",
+        rd.Quantity AS "quantity",
+        rd.Price AS "price",
+        rd.Sub_Total AS "subTotal",
+        rd.Status AS "status",
+        rd.Note AS "note"
+      FROM tblReceipt r
+      INNER JOIN tblReceipt_Details rd ON r.Receipt_ID = rd.Receipt_ID
+      WHERE r.Table_Number = $1
+      AND r.Status = 'Pending' -- You can adjust this based on the order status you're interested in
+    `;
+
+    try {
+        const result = await pool.query(FETCH_ORDER_DETAILS_BY_TABLE_QUERY, [tableNumber]); // Execute the query with the table number
+        if (result.rows.length > 0) {
+            console.log("--THIS IS WHAT IT IS-----");
+            res.status(200).json(result.rows); // Send the retrieved order details as the response
+        } else {
+            console.log('-------CHECKING VALUES-------');
+            res.status(404).json({ message: 'No orders found for this table.' });
+        }
+    } catch (error) {
+        console.log("------CATH ERROR-------");
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ message: 'Failed to fetch order details' });
+    }
+});
+
+
+
 // DELETE an order and its associated order details
 app.delete('/orders/:id', async (req, res) => {
     const { id } = req.params;
