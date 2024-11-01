@@ -601,6 +601,39 @@ app.get('/orders', async (req, res) => {
 });
 
 
+app.post('/order-details/:id', async (req, res) => {
+    const { receiptDetails } = req.body;
+    const receiptId = req.params.id;
+    console.log("Receipt-Id", receiptId);
+    try {
+        // Insert each item in receiptDetails into tblReceipt_Details
+        const detailQuery = `
+        INSERT INTO tblReceipt_Details (Receipt_ID,Item_Name, Category, Quantity, Price, Sub_Total, Status, kitchen_tv)
+        VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
+      `;
+        for (const item of receiptDetails) {
+            const detailValues = [
+                receiptId,
+                item.Item_Name,
+                item.Category,
+                item.Quantity,
+                item.Price,
+                item.Sub_Total,
+                item.Status,
+                item.kitchen_tv
+            ];
+            await pool.query(detailQuery, detailValues);
+        }
+
+        res.status(200).json({ message: 'Order details submitted successfully' });
+    } catch (error) {
+        console.error('Error submitting order details:', error);
+        res.status(500).json({ message: 'Failed to submit order details' });
+    }
+});
+
+
+
 // GET /api/order-details/:id - Retrieve details of a specific order
 app.get('/order-details/:id', async (req, res) => {
     const { id } = req.params; // Extract the order ID from the URL parameters
@@ -661,6 +694,7 @@ app.get('/order-details-by-table/:tableNumber', async (req, res) => {
         const result = await pool.query(FETCH_ORDER_DETAILS_BY_TABLE_QUERY, [tableNumber]); // Execute the query with the table number
         if (result.rows.length > 0) {
             console.log("--THIS IS WHAT IT IS-----");
+            console.log(result.rows);
             res.status(200).json(result.rows); // Send the retrieved order details as the response
         } else {
             console.log('-------CHECKING VALUES-------');
