@@ -57,10 +57,13 @@ const Cart = () => {
       Table_Number: tableNumber,
       Amount: totalAmount,
       Status: 'Pending',
-      UserID: 1,
+      UserID: userId,
       Waiter: 'John Doe',
       Discount: 0
     };
+
+    console.log('-------KALEAB SOLOMON---------');
+    console.log(userId);
 
     const receiptDetails = foodList
       .filter(item => cartItems[item.id] > 0)

@@ -513,7 +513,6 @@ app.delete('/menus/:id', async (req, res) => {
 
 app.post('/orders', async (req, res) => {
     const { receiptData, receiptDetails } = req.body;
-
     try {
         // Begin transaction
         await pool.query('BEGIN');
@@ -533,6 +532,8 @@ app.post('/orders', async (req, res) => {
             receiptData.Waiter,
             receiptData.Discount
         ];
+        console.log(receiptData.UserID);
+        console.log(receiptData);
         const receiptResult = await pool.query(receiptQuery, receiptValues);
         const receiptId = receiptResult.rows[0].receipt_id;
 
@@ -555,13 +556,13 @@ app.post('/orders', async (req, res) => {
             await pool.query(detailQuery, detailValues);
         }
 
-        // Update the status of the table in tblTables to 'Occupied'
+        // Update the status and UserID of the table in tblTables to 'Occupied' and set the UserID
         const updateTableStatusQuery = `
         UPDATE tblTables
-        SET Status = 'Occupied'
+        SET Status = 'Occupied', UserID = $2
         WHERE Table_Number = $1
       `;
-        await pool.query(updateTableStatusQuery, [receiptData.Table_Number]);
+        await pool.query(updateTableStatusQuery, [receiptData.Table_Number, receiptData.UserID]);
 
         // Commit transaction
         await pool.query('COMMIT');
@@ -574,8 +575,6 @@ app.post('/orders', async (req, res) => {
         res.status(500).json({ message: 'Failed to place order' });
     }
 });
-
-
 
 // GET /api/orders - Retrieve all orders
 app.get('/orders', async (req, res) => {
@@ -636,15 +635,8 @@ app.delete('/orders/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-
         // Begin transaction
         await pool.query('BEGIN');
-
-        const updateTableStatusQuery = `
-        UPDATE tblTables
-        SET Status = 'Available'
-        WHERE Table_Number = $1
-      `;
 
         const orderResult = await pool.query('SELECT Table_Number FROM tblReceipt WHERE Receipt_ID = $1', [id]);
 

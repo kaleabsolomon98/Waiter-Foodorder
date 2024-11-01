@@ -74,7 +74,8 @@ export const StoreContextProvider = (props) => {
         setIsLoggedIn,
         getTotalCartAmount,
         fetchFoodItems,
-        setUserId
+        setUserId,
+        userId
     };
 
     return (
