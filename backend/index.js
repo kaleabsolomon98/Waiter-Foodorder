@@ -703,7 +703,7 @@ app.post('/login', async (req, res) => {
 
 app.get('/tables', async (req, res) => {
     // Define the query as a constant within the route
-    const GET_TABLES_QUERY = 'SELECT Table_Number, Status, GroupID FROM tblTables';
+    const GET_TABLES_QUERY = 'SELECT Table_Number, Status, GroupID, UserId FROM tblTables';
 
     try {
         // Execute the query

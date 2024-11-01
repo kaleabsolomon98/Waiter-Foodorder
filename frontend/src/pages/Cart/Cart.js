@@ -20,8 +20,9 @@ const Cart = () => {
     const fetchTables = async () => {
       try {
         const response = await axios.get(`${baseUrl}tables`);
+        console.log('-------KALEAB SOLOMON---------');
+        console.log(response.data);
         setTables(response.data);
-
         // Extract unique group IDs
         const uniqueGroups = Array.from(new Set(response.data.map(table => table.groupid)));
         setGroups(uniqueGroups);
@@ -62,8 +63,7 @@ const Cart = () => {
       Discount: 0
     };
 
-    console.log('-------KALEAB SOLOMON---------');
-    console.log(userId);
+
 
     const receiptDetails = foodList
       .filter(item => cartItems[item.id] > 0)
@@ -188,7 +188,16 @@ const Cart = () => {
               {filteredTables.map(table => (
                 <button
                   key={table.table_number}
-                  onClick={() => handleTableNumberClick(table.table_number)}
+                  onClick={() => {
+                    if (table.status === 'Available') {
+                      handleTableNumberClick(table.table_number);  // Allow selection for available tables
+                    } else if (userId === table.userid) {
+                      handleTableNumberClick(table.table_number);
+                      // Show alert for occupied tables
+                    } else {
+                      alert("This table is occupied with an order.");
+                    }
+                  }}
                   className={`table-button ${table.table_number === selectedTable ? 'selected' : ''} ${table.status === 'Available' ? 'available' : 'occupied'}`}
                 >
                   {table.table_number}
@@ -198,7 +207,7 @@ const Cart = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
