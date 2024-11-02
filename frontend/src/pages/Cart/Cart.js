@@ -198,24 +198,22 @@ const Cart = () => {
                   <thead>
                     <tr>
                       <th>Item Name</th>
-                      <th>Category</th>
+                      {/* <th>Category</th> */}
                       <th>Quantity</th>
                       <th>Price</th>
                       <th>Sub Total</th>
-                      <th>Status</th>
-                      <th>Note</th>
                     </tr>
                   </thead>
                   <tbody>
                     {orderDetails.map((order, index) => (
                       <tr key={index}>
                         <td>{order.itemName}</td>
-                        <td>{order.category}</td>
+                        {/* <td>{order.category}</td> */}
                         <td>{order.quantity}</td>
                         <td>${order.price}</td>
                         <td>${order.subTotal}</td>
-                        <td>{order.status === 1 ? "Completed" : "Pending"}</td>
-                        <td>{order.note || "N/A"}</td>
+                        {/* <td>{order.status === 1 ? "Completed" : "Pending"}</td>
+                        <td>{order.note || "N/A"}</td> */}
                       </tr>
                     ))}
                   </tbody>
