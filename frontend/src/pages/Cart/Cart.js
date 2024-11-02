@@ -14,7 +14,7 @@ const Cart = () => {
   const [groups, setGroups] = useState([]); // Array to hold unique group IDs
   const [selectedTable, setSelectedTable] = useState(null); // Track selected table number
   const [orderDetails, setOrderDetails] = useState([]);
-
+  const [receiptId, setReceiptId] = useState(null);
 
 
   // Fetch tables from backend
@@ -44,6 +44,7 @@ const Cart = () => {
     console.log("--IT IS ENTERED------");
     try {
       const response = await axios.get(`${baseUrl}order-details-by-table/${number}`); // Assuming `number` is the table number
+      setReceiptId(response.data[0]['receiptId']);
       setOrderDetails(response.data); // Store the fetched order details
     } catch (error) {
       console.error("Failed to fetch order details:", error);
@@ -89,16 +90,42 @@ const Cart = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${baseUrl}orders`, {
-        receiptData,
-        receiptDetails
-      });
+      const selectedTableData = tables.find(table => table.table_number === tableNumber);
 
-      if (response.status === 200) {
-        alert("Order placed successfully!");
+      if (selectedTableData && selectedTableData.status === 'Available') {
+        // If the table is available, place the full order
+        const response = await axios.post(`${baseUrl}orders`, {
+          receiptData,
+          receiptDetails
+        });
+
+        if (response.status === 200) {
+          alert("Order placed successfully!");
+        } else {
+          alert("Failed to place order. Please try again.");
+        }
       } else {
-        alert("Failed to place order. Please try again.");
+        // If the table is not available, just post the order details
+        const response = await axios.post(`${baseUrl}order-details/${receiptId}`, {
+          receiptDetails
+        });
+
+        if (response.status === 200) {
+          alert("Order details submitted successfully!");
+        } else {
+          alert("Failed to submit order details. Please try again.");
+        }
       }
+      // const response = await axios.post(`${baseUrl}orders`, {
+      //   receiptData,
+      //   receiptDetails
+      // });
+
+      // if (response.status === 200) {
+      //   alert("Order placed successfully!");
+      // } else {
+      //   alert("Failed to place order. Please try again.");
+      // }
     } catch (error) {
       alert("An error occurred while placing the order. Please try again.");
     } finally {
@@ -162,8 +189,43 @@ const Cart = () => {
           <button onClick={handlePlaceOrder} disabled={loading}>
             {loading ? <CircularProgress size={24} /> : "PLACE ORDER"}
           </button>
-        </div>
 
+          <div className="order-details-section">
+            {Array.isArray(orderDetails) && orderDetails.length > 0 ? (
+              <>
+                <h2 className="order-details-title">Order Details</h2>
+                <table className="order-details-table">
+                  <thead>
+                    <tr>
+                      <th>Item Name</th>
+                      <th>Category</th>
+                      <th>Quantity</th>
+                      <th>Price</th>
+                      <th>Sub Total</th>
+                      <th>Status</th>
+                      <th>Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orderDetails.map((order, index) => (
+                      <tr key={index}>
+                        <td>{order.itemName}</td>
+                        <td>{order.category}</td>
+                        <td>{order.quantity}</td>
+                        <td>${order.price}</td>
+                        <td>${order.subTotal}</td>
+                        <td>{order.status === 1 ? "Completed" : "Pending"}</td>
+                        <td>{order.note || "N/A"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : (
+              <p>No order details available.</p>
+            )}
+          </div>
+        </div>
         <div className='cart-promocode'>
           <div>
             <p>Enter the table number here</p>
@@ -172,6 +234,7 @@ const Cart = () => {
                 type='text'
                 placeholder='Table number'
                 value={tableNumber}
+                readOnly={true}
                 onChange={(e) => setTableNumber(e.target.value)}
               />
             </div>
@@ -216,41 +279,6 @@ const Cart = () => {
               ))}
             </div>
           </div>
-        </div>
-        <div className="order-details-section">
-          {Array.isArray(orderDetails) && orderDetails.length > 0 ? (
-            <>
-              <h2>Order Details</h2>
-              <table className="order-details-table">
-                <thead>
-                  <tr>
-                    <th>Item Name</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Sub Total</th>
-                    <th>Status</th>
-                    <th>Note</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderDetails.map((order, index) => (
-                    <tr key={index}>
-                      <td>{order.item_name}</td>
-                      <td>{order.category}</td>
-                      <td>{order.quantity}</td>
-                      <td>${order.price}</td>
-                      <td>${order.sub_total}</td>
-                      <td>{order.status === 1 ? "Completed" : "Pending"}</td>
-                      <td>{order.note || "N/A"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          ) : (
-            <p>No order details available.</p>
-          )}
         </div>
       </div>
     </div >
