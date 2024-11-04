@@ -652,7 +652,6 @@ app.get('/order-details/:id', async (req, res) => {
       FROM tblReceipt_Details
       WHERE Receipt_ID = $1
     `;
-
     try {
         const result = await pool.query(FETCH_ORDER_DETAILS_QUERY, [id]); // Execute the query with the provided ID
         res.status(200).json(result.rows); // Send the retrieved rows as the response
@@ -756,6 +755,143 @@ app.delete('/orders/:id', async (req, res) => {
         // Rollback in case of any error
         await pool.query('ROLLBACK');
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+// GET /api/employees - Retrieve all employees
+app.get('/employees', async (req, res) => {
+    // Define the query constant to fetch selected columns from the Employee table
+    const FETCH_SELECTED_EMPLOYEES_QUERY = `
+      SELECT 
+        EmployeeID AS "id",    
+        EmployeeTitle AS "title", 
+        FirstName AS "firstName", 
+        MiddleName AS "middleName", 
+        LastName AS "lastName", 
+        Phone, 
+        Salary, 
+        WagesDaily AS "dailyWage", 
+        TaxAmount AS "taxAmount", 
+        HireDate AS "hireDate", 
+        LoginRequirement AS "loginRequired", 
+        ImagePath AS "image", 
+        SalaryPaymentType AS "salaryPaymentType"
+      FROM Employee
+    `;
+
+    try {
+        const result = await pool.query(FETCH_SELECTED_EMPLOYEES_QUERY);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        res.status(500).json({ message: 'Failed to fetch employees' });
+    }
+});
+
+// POST /api/employees - Add a new employee
+app.post('/employees', async (req, res) => {
+    const {
+        employeeTitle,
+        firstName,
+        middleName,
+        lastName,
+        phone,
+        salary,
+        dailyWage,
+        taxAmount,
+        hireDate,
+        loginRequired,
+        image,
+        salaryPaymentType
+    } = req.body;
+
+    const ADD_EMPLOYEE_QUERY = `
+      INSERT INTO Employee (
+        EmployeeTitle, FirstName, MiddleName, LastName, Phone, Salary, WagesDaily, 
+        TaxAmount, HireDate, LoginRequirement, ImagePath, SalaryPaymentType
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+      RETURNING EmployeeID AS "id";
+    `;
+
+    try {
+        const result = await pool.query(ADD_EMPLOYEE_QUERY, [
+            employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
+            taxAmount, hireDate, loginRequired, image, salaryPaymentType
+        ]);
+        res.status(201).json({ id: result.rows[0].id, message: 'Employee added successfully' });
+    } catch (error) {
+        console.error('Error adding employee:', error);
+        res.status(500).json({ message: 'Failed to add employee' });
+    }
+});
+
+// PUT /api/employees/:id - Update an existing employee by ID
+app.put('/employees/:id', async (req, res) => {
+    const { id } = req.params;
+    const {
+        employeeTitle,
+        firstName,
+        middleName,
+        lastName,
+        phone,
+        salary,
+        dailyWage,
+        taxAmount,
+        hireDate,
+        loginRequired,
+        image,
+        salaryPaymentType
+    } = req.body;
+
+    const UPDATE_EMPLOYEE_QUERY = `
+      UPDATE Employee 
+      SET 
+        EmployeeTitle = $1, FirstName = $2, MiddleName = $3, LastName = $4, Phone = $5, 
+        Salary = $6, WagesDaily = $7, TaxAmount = $8, HireDate = $9, LoginRequirement = $10, 
+        ImagePath = $11, SalaryPaymentType = $12
+      WHERE EmployeeID = $13
+      RETURNING EmployeeID AS "id";
+    `;
+
+    try {
+        const result = await pool.query(UPDATE_EMPLOYEE_QUERY, [
+            employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
+            taxAmount, hireDate, loginRequired, image, salaryPaymentType, id
+        ]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.status(200).json({ id: result.rows[0].id, message: 'Employee updated successfully' });
+    } catch (error) {
+        console.error('Error updating employee:', error);
+        res.status(500).json({ message: 'Failed to update employee' });
+    }
+});
+
+// DELETE /api/employees/:id - Delete an employee by ID
+app.delete('/employees/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const DELETE_EMPLOYEE_QUERY = `
+      DELETE FROM Employee 
+      WHERE EmployeeID = $1
+      RETURNING EmployeeID AS "id";
+    `;
+
+    try {
+        const result = await pool.query(DELETE_EMPLOYEE_QUERY, [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.status(200).json({ id: result.rows[0].id, message: 'Employee deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting employee:', error);
+        res.status(500).json({ message: 'Failed to delete employee' });
     }
 });
 
