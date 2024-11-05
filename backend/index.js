@@ -775,7 +775,7 @@ app.get('/employees', async (req, res) => {
         TaxAmount AS "taxAmount", 
         HireDate AS "hireDate", 
         LoginRequirement AS "loginRequired", 
-        ImagePath AS "image", 
+        Image AS "image", 
         SalaryPaymentType AS "salaryPaymentType"
       FROM Employee
     `;
