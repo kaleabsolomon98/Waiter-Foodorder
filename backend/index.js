@@ -55,28 +55,30 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        // Iterate through all users to find one with a matching hashed password
+        // Get all users
         const usersQuery = 'SELECT user_id, username, role, employeeid, password_hash FROM Users';
         const users = await pool.query(usersQuery);
 
-        // Search for a matching password
-        const matchedUser = users.rows.find(async user => await bcrypt.compare(password, user.password_hash));
-
-        // Return result
-        if (matchedUser) {
-            const { user_id, username, role, employeeid } = matchedUser;
-            return res.status(200).json({
-                message: 'Login successful',
-                user: { user_id, username, role, employeeid },
-            });
-        } else {
-            return res.status(401).json({ message: 'Invalid password' });
+        // Iterate through users to find a matching hashed password
+        for (let user of users.rows) {
+            const isMatch = await bcrypt.compare(password, user.password_hash);
+            if (isMatch) {
+                const { user_id, username, role, employeeid } = user;
+                return res.status(200).json({
+                    message: 'Login successful',
+                    user: { user_id, username, role, employeeid },
+                });
+            }
         }
+
+        // If no match is found, return an invalid password response
+        return res.status(401).json({ message: 'Invalid password' });
     } catch (error) {
         console.error('Login error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 const storage = multer.diskStorage({

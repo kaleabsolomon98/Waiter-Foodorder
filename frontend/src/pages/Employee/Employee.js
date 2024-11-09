@@ -214,7 +214,7 @@ const EmployeeRegistration = () => {
                         <form onSubmit={handleSubmit} className={styles['form-layout']}>
                             <div className={styles['form-grid']}>
                                 <div className={styles.field}>
-                                    <label>Title</label>
+                                    <label>Employee Title</label>
                                     <input
                                         type="text"
                                         placeholder="Enter Employee Title"
@@ -253,41 +253,72 @@ const EmployeeRegistration = () => {
                                     />
                                 </div>
                                 <div className={styles.field}>
-                                    <label>Phone</label>
+                                    <label>Daily Wage</label>
                                     <input
                                         type="text"
-                                        placeholder="Enter Phone"
-                                        value={newEmployee.phone}
-                                        onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                                        required
+                                        placeholder="Enter Daily Wage"
+                                        value={newEmployee.dailyWage}
+                                        onChange={(e) => {
+                                            // Ensure the input is a number (allow empty string for clearing the input)
+                                            const value = e.target.value;
+                                            if (/^\d*$/.test(value)) {
+                                                setNewEmployee({ ...newEmployee, dailyWage: value });
+                                            }
+                                        }}
                                     />
                                 </div>
+
                                 <div className={styles.field}>
                                     <label>Salary</label>
                                     <input
-                                        type="number"
+                                        type="text" // Change type to "text" for better control
                                         placeholder="Enter Salary"
                                         value={newEmployee.salary}
-                                        onChange={(e) => setNewEmployee({ ...newEmployee, salary: e.target.value })}
-                                        required
+                                        onChange={(e) => {
+                                            // Ensure the input only contains digits or an empty string for clearing the input
+                                            const value = e.target.value;
+                                            if (/^\d*$/.test(value)) {
+                                                setNewEmployee({ ...newEmployee, salary: value });
+                                            }
+                                        }}
+                                        inputMode="numeric" // Suggests numeric input (on mobile)
+                                        pattern="[0-9]*"
+                                    // required
                                     />
                                 </div>
+
                                 <div className={styles.field}>
                                     <label>Daily Wage</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         placeholder="Enter Daily Wage"
                                         value={newEmployee.dailyWage}
-                                        onChange={(e) => setNewEmployee({ ...newEmployee, dailyWage: e.target.value })}
+                                        onChange={(e) => {
+                                            // Ensure the input is a number (allow empty string for clearing the input)
+                                            const value = e.target.value;
+                                            if (/^\d*$/.test(value)) {
+                                                setNewEmployee({ ...newEmployee, dailyWage: value });
+                                            }
+                                        }}
+                                        inputMode="numeric" // Suggests numeric input (on mobile)
+                                        pattern="[0-9]*"
                                     />
                                 </div>
                                 <div className={styles.field}>
                                     <label>Tax Amount</label>
                                     <input
-                                        type="number"
+                                        type="text" // Use type="text" for better control
                                         placeholder="Enter Tax Amount"
                                         value={newEmployee.taxAmount}
-                                        onChange={(e) => setNewEmployee({ ...newEmployee, taxAmount: e.target.value })}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Check if the value is either an empty string (for clearing) or contains only numeric characters
+                                            if (/^\d*\.?\d*$/.test(value)) {
+                                                setNewEmployee({ ...newEmployee, taxAmount: value });
+                                            }
+                                        }}
+                                        inputMode="numeric" // Suggest numeric input on mobile devices
+                                        pattern="[0-9]*"    // Allows only numeric characters
                                     />
                                 </div>
                                 <div className={styles.field}>
