@@ -789,6 +789,45 @@ app.get('/employees', async (req, res) => {
     }
 });
 
+// // POST /api/employees - Add a new employee
+// app.post('/employees', upload.single('image'), async (req, res) => {
+//     console.log(req.body);
+//     const {
+//         employeeTitle,
+//         firstName,
+//         middleName,
+//         lastName,
+//         phone,
+//         salary,
+//         dailyWage,
+//         taxAmount,
+//         hireDate,
+//         loginRequired,
+//         image,
+//         salaryPaymentType
+//     } = req.body;
+
+//     const ADD_EMPLOYEE_QUERY = `
+//       INSERT INTO Employee (
+//         EmployeeTitle, FirstName, MiddleName, LastName, Phone, Salary, WagesDaily, 
+//         TaxAmount, HireDate, LoginRequirement, Image, SalaryPaymentType
+//       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+//       RETURNING EmployeeID AS "id";
+//     `;
+
+//     try {
+//         const result = await pool.query(ADD_EMPLOYEE_QUERY, [
+//             employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
+//             taxAmount, hireDate, loginRequired, image, salaryPaymentType
+//         ]);
+//         res.status(201).json({ id: result.rows[0].id, message: 'Employee added successfully' });
+//     } catch (error) {
+//         console.error('Error adding employee:', error);
+//         res.status(500).json({ message: 'Failed to add employee' });
+//     }
+// });
+
+
 // POST /api/employees - Add a new employee
 app.post('/employees', upload.single('image'), async (req, res) => {
     console.log(req.body);
@@ -802,10 +841,20 @@ app.post('/employees', upload.single('image'), async (req, res) => {
         dailyWage,
         taxAmount,
         hireDate,
-        loginRequired,
+        loginRequired, // This field should be either true or false
         image,
         salaryPaymentType
     } = req.body;
+
+    // Convert loginRequired boolean to 'yes', 'no', or 'login' based on the boolean value
+    let loginRequirementValue;
+    if (loginRequired === 'true') {
+        loginRequirementValue = 'yes';
+    } else if (loginRequired === 'false') {
+        loginRequirementValue = 'no';
+    } else {
+        loginRequirementValue = 'login'; // Default, if no value or invalid value is provided
+    }
 
     const ADD_EMPLOYEE_QUERY = `
       INSERT INTO Employee (
@@ -818,7 +867,7 @@ app.post('/employees', upload.single('image'), async (req, res) => {
     try {
         const result = await pool.query(ADD_EMPLOYEE_QUERY, [
             employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
-            taxAmount, hireDate, loginRequired, image, salaryPaymentType
+            taxAmount, hireDate, loginRequirementValue, image, salaryPaymentType
         ]);
         res.status(201).json({ id: result.rows[0].id, message: 'Employee added successfully' });
     } catch (error) {
@@ -826,6 +875,7 @@ app.post('/employees', upload.single('image'), async (req, res) => {
         res.status(500).json({ message: 'Failed to add employee' });
     }
 });
+
 
 // PUT /api/employees/:id - Update an existing employee by ID
 app.put('/employees/:id', async (req, res) => {
