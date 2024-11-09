@@ -11,6 +11,7 @@ var jwt = require('jsonwebtoken');
 const app = express();
 const port = 4422;
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 
 
@@ -46,34 +47,36 @@ const JWT_SECRET = 'c09a42022c2b32fc1094cfbb16b156ffc814e2f9aa29fca39ecaff101b1d
 
 var tokens;
 
-// Login Route
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { password } = req.body;
+
+    if (!password) {
+        return res.status(400).json({ message: 'Password is required' });
+    }
 
     try {
-        const result = await pool.query('SELECT * FROM userz WHERE email = $1', [email]);
+        // Iterate through all users to find one with a matching hashed password
+        const usersQuery = 'SELECT user_id, username, role, employeeid, password_hash FROM Users';
+        const users = await pool.query(usersQuery);
 
-        if (result.rows.length === 0) {
-            return res.status(401).send({ message: 'Invalid email or password' });
+        // Search for a matching password
+        const matchedUser = users.rows.find(async user => await bcrypt.compare(password, user.password_hash));
+
+        // Return result
+        if (matchedUser) {
+            const { user_id, username, role, employeeid } = matchedUser;
+            return res.status(200).json({
+                message: 'Login successful',
+                user: { user_id, username, role, employeeid },
+            });
+        } else {
+            return res.status(401).json({ message: 'Invalid password' });
         }
-
-        const user = result.rows[0];
-
-        if (password !== user.password) {
-            return res.status(401).send({ message: 'Invalid email or password' });
-        }
-
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-
-        res.json({ token });
     } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).send({ message: 'Internal server error' });
+        console.error('Login error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
-
-
-
 
 
 const storage = multer.diskStorage({
@@ -762,13 +765,13 @@ app.delete('/orders/:id', async (req, res) => {
 
 app.get('/useremployees', async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM employee WHERE loginrequirement = $1', ['yes']);
-      res.status(200).json(result.rows);
+        const result = await pool.query('SELECT * FROM employee WHERE loginrequirement = $1', ['yes']);
+        res.status(200).json(result.rows);
     } catch (error) {
-      console.error('Error fetching employees:', error);
-      res.status(500).send('Server error');
+        console.error('Error fetching employees:', error);
+        res.status(500).send('Server error');
     }
-  });
+});
 
 // GET /api/employees - Retrieve all employees
 app.get('/employees', async (req, res) => {
@@ -1035,13 +1038,18 @@ app.get('/tables', async (req, res) => {
 // });
 
 app.post('/users', async (req, res) => {
-    const { username, password, employeeid, role } = req.body;
+    console.log(req.body);
+    const { username, password, employeeId, role } = req.body;
+    console.log(req.body);
 
     if (!username || !password || !role) {
         return res.status(400).json({ message: 'Username, password, and role are required' });
     }
 
+
     try {
+        await pool.query('BEGIN'); // Start a transaction
+
         // Hash the password
         const passwordHash = await bcrypt.hash(password, 10);
 
@@ -1051,17 +1059,19 @@ app.post('/users', async (req, res) => {
             VALUES ($1, $2, $3, $4)
             RETURNING user_id, username, role
         `;
-        const userValues = [username, passwordHash, employeeid, role];
+        const userValues = [username, passwordHash, employeeId, role];
         const userResult = await pool.query(userQuery, userValues);
 
         // Update the loginRequirement field in the Employees table
         const employeeQuery = `
-            UPDATE Employees
-            SET loginRequirement = 'Login'
-            WHERE employee_id = $1
+            UPDATE Employee
+            SET loginrequirement = 'login'
+            WHERE employeeid = $1
         `;
-        const employeeValues = [employeeid];
+        const employeeValues = [employeeId];
         await pool.query(employeeQuery, employeeValues);
+
+        await pool.query('COMMIT'); // Commit the transaction
 
         // Return the newly created user info (excluding the password hash)
         res.status(201).json({
@@ -1069,10 +1079,12 @@ app.post('/users', async (req, res) => {
             user: userResult.rows[0],
         });
     } catch (error) {
+        await pool.query('ROLLBACK'); // Roll back the transaction if there is an error
         console.error('Error inserting user and updating employee:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 
