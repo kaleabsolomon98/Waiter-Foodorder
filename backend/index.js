@@ -762,7 +762,7 @@ app.delete('/orders/:id', async (req, res) => {
 
 app.get('/useremployees', async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM employees WHERE login_required = $1', ['yes']);
+      const result = await pool.query('SELECT * FROM employee WHERE loginrequirement = $1', ['yes']);
       res.status(200).json(result.rows);
     } catch (error) {
       console.error('Error fetching employees:', error);
@@ -800,45 +800,6 @@ app.get('/employees', async (req, res) => {
     }
 });
 
-// // POST /api/employees - Add a new employee
-// app.post('/employees', upload.single('image'), async (req, res) => {
-//     console.log(req.body);
-//     const {
-//         employeeTitle,
-//         firstName,
-//         middleName,
-//         lastName,
-//         phone,
-//         salary,
-//         dailyWage,
-//         taxAmount,
-//         hireDate,
-//         loginRequired,
-//         image,
-//         salaryPaymentType
-//     } = req.body;
-
-//     const ADD_EMPLOYEE_QUERY = `
-//       INSERT INTO Employee (
-//         EmployeeTitle, FirstName, MiddleName, LastName, Phone, Salary, WagesDaily, 
-//         TaxAmount, HireDate, LoginRequirement, Image, SalaryPaymentType
-//       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
-//       RETURNING EmployeeID AS "id";
-//     `;
-
-//     try {
-//         const result = await pool.query(ADD_EMPLOYEE_QUERY, [
-//             employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
-//             taxAmount, hireDate, loginRequired, image, salaryPaymentType
-//         ]);
-//         res.status(201).json({ id: result.rows[0].id, message: 'Employee added successfully' });
-//     } catch (error) {
-//         console.error('Error adding employee:', error);
-//         res.status(500).json({ message: 'Failed to add employee' });
-//     }
-// });
-
-
 // POST /api/employees - Add a new employee
 app.post('/employees', upload.single('image'), async (req, res) => {
     console.log(req.body);
@@ -852,20 +813,10 @@ app.post('/employees', upload.single('image'), async (req, res) => {
         dailyWage,
         taxAmount,
         hireDate,
-        loginRequired, // This field should be either true or false
+        loginRequired,
         image,
         salaryPaymentType
     } = req.body;
-
-    // Convert loginRequired boolean to 'yes', 'no', or 'login' based on the boolean value
-    let loginRequirementValue;
-    if (loginRequired === 'true') {
-        loginRequirementValue = 'yes';
-    } else if (loginRequired === 'false') {
-        loginRequirementValue = 'no';
-    } else {
-        loginRequirementValue = 'login'; // Default, if no value or invalid value is provided
-    }
 
     const ADD_EMPLOYEE_QUERY = `
       INSERT INTO Employee (
@@ -878,7 +829,7 @@ app.post('/employees', upload.single('image'), async (req, res) => {
     try {
         const result = await pool.query(ADD_EMPLOYEE_QUERY, [
             employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
-            taxAmount, hireDate, loginRequirementValue, image, salaryPaymentType
+            taxAmount, hireDate, loginRequired, image, salaryPaymentType
         ]);
         res.status(201).json({ id: result.rows[0].id, message: 'Employee added successfully' });
     } catch (error) {
@@ -886,6 +837,55 @@ app.post('/employees', upload.single('image'), async (req, res) => {
         res.status(500).json({ message: 'Failed to add employee' });
     }
 });
+
+
+// POST /api/employees - Add a new employee
+// app.post('/employees', upload.single('image'), async (req, res) => {
+//     console.log(req.body);
+//     const {
+//         employeeTitle,
+//         firstName,
+//         middleName,
+//         lastName,
+//         phone,
+//         salary,
+//         dailyWage,
+//         taxAmount,
+//         hireDate,
+//         loginRequired, // This field should be either true or false
+//         image,
+//         salaryPaymentType
+//     } = req.body;
+
+//     // Convert loginRequired boolean to 'yes', 'no', or 'login' based on the boolean value
+//     // let loginRequirementValue;
+//     // if (loginRequired === 'true') {
+//     //     loginRequirementValue = 'yes';
+//     // } else if (loginRequired === 'false') {
+//     //     loginRequirementValue = 'no';
+//     // } else {
+//     //     loginRequirementValue = 'login'; // Default, if no value or invalid value is provided
+//     // }
+
+//     const ADD_EMPLOYEE_QUERY = `
+//       INSERT INTO Employee (
+//         EmployeeTitle, FirstName, MiddleName, LastName, Phone, Salary, WagesDaily, 
+//         TaxAmount, HireDate, LoginRequirement, Image, SalaryPaymentType
+//       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+//       RETURNING EmployeeID AS "id";
+//     `;
+
+//     try {
+//         const result = await pool.query(ADD_EMPLOYEE_QUERY, [
+//             employeeTitle, firstName, middleName, lastName, phone, salary, dailyWage,
+//             taxAmount, hireDate, loginRequirementValue, image, salaryPaymentType
+//         ]);
+//         res.status(201).json({ id: result.rows[0].id, message: 'Employee added successfully' });
+//     } catch (error) {
+//         console.error('Error adding employee:', error);
+//         res.status(500).json({ message: 'Failed to add employee' });
+//     }
+// });
 
 
 // PUT /api/employees/:id - Update an existing employee by ID
@@ -1002,6 +1002,38 @@ app.get('/tables', async (req, res) => {
 });
 
 // POST method to add a new user
+// app.post('/users', async (req, res) => {
+//     const { username, password, employeeid, role } = req.body;
+
+//     if (!username || !password || !role) {
+//         return res.status(400).json({ message: 'Username, password, and role are required' });
+//     }
+
+//     try {
+//         // Hash the password
+//         const passwordHash = await bcrypt.hash(password, 10);
+
+//         // Insert the new user into the database
+//         const query = `
+//         INSERT INTO Users (username, password_hash, employeeid, role)
+//         VALUES ($1, $2, $3, $4)
+//         RETURNING user_id, username, role
+//       `;
+//         const values = [username, passwordHash, employeeid, role];
+
+//         const result = await pool.query(query, values);
+
+//         // Return the newly created user info (excluding the password hash)
+//         res.status(201).json({
+//             message: 'User created successfully',
+//             user: result.rows[0],
+//         });
+//     } catch (error) {
+//         console.error('Error inserting user:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// });
+
 app.post('/users', async (req, res) => {
     const { username, password, employeeid, role } = req.body;
 
@@ -1013,26 +1045,35 @@ app.post('/users', async (req, res) => {
         // Hash the password
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Insert the new user into the database
-        const query = `
-        INSERT INTO Users (username, password_hash, employeeid, role)
-        VALUES ($1, $2, $3, $4)
-        RETURNING user_id, username, role
-      `;
-        const values = [username, passwordHash, employeeid, role];
+        // Insert the new user into the Users table
+        const userQuery = `
+            INSERT INTO Users (username, password_hash, employeeid, role)
+            VALUES ($1, $2, $3, $4)
+            RETURNING user_id, username, role
+        `;
+        const userValues = [username, passwordHash, employeeid, role];
+        const userResult = await pool.query(userQuery, userValues);
 
-        const result = await pool.query(query, values);
+        // Update the loginRequirement field in the Employees table
+        const employeeQuery = `
+            UPDATE Employees
+            SET loginRequirement = 'Login'
+            WHERE employee_id = $1
+        `;
+        const employeeValues = [employeeid];
+        await pool.query(employeeQuery, employeeValues);
 
         // Return the newly created user info (excluding the password hash)
         res.status(201).json({
-            message: 'User created successfully',
-            user: result.rows[0],
+            message: 'User created successfully and employee login requirement updated',
+            user: userResult.rows[0],
         });
     } catch (error) {
-        console.error('Error inserting user:', error);
+        console.error('Error inserting user and updating employee:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 app.post('/register', async (req, res) => {

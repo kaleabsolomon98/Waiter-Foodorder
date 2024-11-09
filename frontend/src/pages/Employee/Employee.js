@@ -100,8 +100,8 @@ const EmployeeRegistration = () => {
         formData.append('salary', newEmployee.salary);
         formData.append('dailyWage', newEmployee.dailyWage);
         formData.append('taxAmount', newEmployee.taxAmount);
-        formData.append('hireDate', newEmployee.hireDate.toISOString());
-        formData.append('loginRequired', newEmployee.loginRequired ? 'true' : 'false');
+        formData.append('hireDate', newEmployee.hireDate);
+        formData.append('loginRequired', newEmployee.loginRequired);
         formData.append('salaryPaymentType', newEmployee.salaryPaymentType);
         formData.append('image', newEmployee.image ? newEmployee.image : editingEmployee?.image);
 
@@ -177,7 +177,7 @@ const EmployeeRegistration = () => {
                             <td>${(parseFloat(employee.dailyWage) || 0).toFixed(2)}</td>
                             <td>${(parseFloat(employee.taxAmount) || 0).toFixed(2)}</td>
                             <td>{employee.hireDate}</td>
-                            <td>{employee.loginRequired ? 'Yes' : 'No'}</td>
+                            <td>{employee.loginRequired}</td>
                             <td>
                                 {employee.image ? (
                                     <img src={employee.image} alt={employee.firstName} style={{ width: '30px', height: '30px' }} />
@@ -294,7 +294,7 @@ const EmployeeRegistration = () => {
                                     <label>Hire Date</label>
                                     <DatePicker
                                         selected={newEmployee.hireDate} // Controlled component with current state
-                                        onChange={(date) => setNewEmployee({ ...newEmployee, hireDate: date })}
+                                        onChange={(date) => setNewEmployee({ ...newEmployee, hireDate: date.toISOString() })}
                                         dateFormat="yyyy-MM-dd" // Display format
                                         className="your-custom-class" // Optional: for custom styling
                                     />

@@ -12,6 +12,7 @@ import Category from './pages/Category/Category';
 import OrderList from './pages/Order/OrderList';
 import OrderDetails from './pages/OrderDetail/OrderDetail';
 import EmployeeRegistration from './pages/Employee/Employee';
+import UserRegistration from './pages/User/User';
 
 const App = () => {
   const { isLoggedIn } = useContext(StoreContext);
@@ -31,6 +32,7 @@ const App = () => {
         <Route path='/order' element={isLoggedIn ? <OrderList /> : <Navigate to="/" replace />} />
         <Route path='/order-details/:id' element={isLoggedIn ? <OrderDetails /> : <Navigate to="/" replace />} />
         <Route path='/employee' element={isLoggedIn ? <EmployeeRegistration /> : <Navigate to="/" replace />} />
+        <Route path='/adduser' element={isLoggedIn ? <UserRegistration /> : <Navigate to="/" replace />} />
       </Routes>
     </div>
   );
