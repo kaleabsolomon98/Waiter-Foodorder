@@ -6,18 +6,20 @@ import baseUrl from '../../components/Constants/base_url';
 
 const UserRegistration = () => {
     const [employees, setEmployees] = useState([]);
+    const [employeeTitles, setEmployeeTitles] = useState([]);  // Ensure it's an empty array
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [newUser, setNewUser] = useState({
         username: '',
         password: '',
-        role: '',
+        role: '',  // role will be set from employee title
     });
 
-    // Fetch employees when the component mounts
+    // Fetch employees and employee titles when the component mounts
     useEffect(() => {
         fetchEmployees();
+        fetchEmployeeTitles();  // Fetch employee titles separately
     }, []);
 
     const fetchEmployees = async () => {
@@ -29,9 +31,25 @@ const UserRegistration = () => {
         }
     };
 
-    const openModal = (employeeId) => {
+    const fetchEmployeeTitles = async () => {
+        try {
+            const response = await axios.get(`${baseUrl}employee-titles`);
+            console.log('Employee Titles Response:', response.data); // Log response to debug
+
+            // Ensure the response data is an array
+            if (Array.isArray(response.data)) {
+                setEmployeeTitles(response.data);  // Set employee titles if it's an array
+            } else {
+                console.error('Employee titles are not in array format:', response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching employee titles:', error);
+        }
+    };
+
+    const openModal = (employeeId, employeeTitle) => {
         setSelectedEmployee(employeeId);
-        setNewUser({ username: '', password: '', role: '' });
+        setNewUser({ username: '', password: '', role: employeeTitle });  // Preselect role based on employee title
         setIsModalOpen(true);
     };
 
@@ -84,7 +102,7 @@ const UserRegistration = () => {
                 </thead>
                 <tbody>
                     {employees.map((employee) => (
-                        <tr key={employee.employeeid} onClick={() => openModal(employee.employeeid)} className={styles.row}>
+                        <tr key={employee.employeeid} onClick={() => openModal(employee.employeeid, employee.employeetitle)} className={styles.row}>
                             <td>{employee.employeetitle}</td>
                             <td>{employee.firstname}</td>
                             <td>{employee.lastname}</td>
@@ -109,13 +127,23 @@ const UserRegistration = () => {
                         <form onSubmit={handleSubmit} className={styles['form-layout']}>
                             <div className={styles.field}>
                                 <label>Role</label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter Role"
+                                <select
                                     value={newUser.role}
                                     onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                                     required
-                                />
+                                >
+                                    <option value="">Select Role</option>
+                                    {/* Render employee titles only if employeeTitles is an array */}
+                                    {employeeTitles && employeeTitles.length > 0 ? (
+                                        employeeTitles.map((title, index) => (
+                                            <option key={index} value={title['name']}>
+                                                {title['name']}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="" disabled>No roles available</option>
+                                    )}
+                                </select>
                             </div>
                             <div className={styles.field}>
                                 <label>Username</label>

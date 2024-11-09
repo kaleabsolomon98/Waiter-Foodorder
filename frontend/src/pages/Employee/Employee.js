@@ -6,11 +6,10 @@ import DatePicker from 'react-datepicker';
 import styles from './Employee.module.css';
 import baseUrl from '../../components/Constants/base_url';
 import "react-datepicker/dist/react-datepicker.css";
-// import moment from 'moment-timezone';
-
 
 const EmployeeRegistration = () => {
     const [employees, setEmployees] = useState([]);
+    const [employeeTitles, setEmployeeTitles] = useState([]); // State for employee titles
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [newEmployee, setNewEmployee] = useState({
         employeeTitle: '', firstName: '', middleName: '', lastName: '', phone: '', salary: '', dailyWage: '',
@@ -22,22 +21,25 @@ const EmployeeRegistration = () => {
 
     const [selectedDate, setSelectedDate] = useState(new Date());
 
-    // Assuming the user's timezone is 'America/Los_Angeles'
-    const userTimezone = 'America/Los_Angeles';
+    // Fetch Employee Titles on Component Mount
+    useEffect(() => {
+        const fetchEmployeeTitles = async () => {
+            try {
+                const response = await axios.get(`${baseUrl}employee-titles`); // Assuming your API for employee titles
+                setEmployeeTitles(response.data);
+            } catch (error) {
+                console.error('Error fetching employee titles:', error);
+            }
+        };
 
-    const handleDateChange = (date) => {
-        // Convert the selected date to the user's timezone
-        const dateInUserTimezone = date.toDate();
-        setSelectedDate(dateInUserTimezone);
-    };
+        fetchEmployeeTitles();
+    }, []);
 
-
+    // Fetch Employees (same as before)
     useEffect(() => {
         const fetchEmployees = async () => {
-            console.log("---FETCHING DATE------", newEmployee.hireDate);
             try {
                 const response = await axios.get(`${baseUrl}employees`);
-                console.log(response);
                 setEmployees(response.data);
             } catch (error) {
                 console.error('Error fetching employees:', error);
@@ -215,13 +217,18 @@ const EmployeeRegistration = () => {
                             <div className={styles['form-grid']}>
                                 <div className={styles.field}>
                                     <label>Employee Title</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Enter Employee Title"
+                                    <select
                                         value={newEmployee.employeeTitle}
                                         onChange={(e) => setNewEmployee({ ...newEmployee, employeeTitle: e.target.value })}
                                         required
-                                    />
+                                    >
+                                        <option value="">Select Title</option>
+                                        {employeeTitles.map(title => (
+                                            <option key={title.id} value={title.name}>
+                                                {title.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className={styles.field}>
                                     <label>First Name</label>
@@ -249,6 +256,16 @@ const EmployeeRegistration = () => {
                                         placeholder="Enter Last Name"
                                         value={newEmployee.lastName}
                                         onChange={(e) => setNewEmployee({ ...newEmployee, lastName: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className={styles.field}>
+                                    <label>Phone</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Phone"
+                                        value={newEmployee.phone}
+                                        onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
                                         required
                                     />
                                 </div>
@@ -284,24 +301,6 @@ const EmployeeRegistration = () => {
                                         inputMode="numeric" // Suggests numeric input (on mobile)
                                         pattern="[0-9]*"
                                     // required
-                                    />
-                                </div>
-
-                                <div className={styles.field}>
-                                    <label>Daily Wage</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Enter Daily Wage"
-                                        value={newEmployee.dailyWage}
-                                        onChange={(e) => {
-                                            // Ensure the input is a number (allow empty string for clearing the input)
-                                            const value = e.target.value;
-                                            if (/^\d*$/.test(value)) {
-                                                setNewEmployee({ ...newEmployee, dailyWage: value });
-                                            }
-                                        }}
-                                        inputMode="numeric" // Suggests numeric input (on mobile)
-                                        pattern="[0-9]*"
                                     />
                                 </div>
                                 <div className={styles.field}>

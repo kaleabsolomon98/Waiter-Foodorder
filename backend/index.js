@@ -983,6 +983,19 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.get('/employee-titles', async (req, res) => {
+    try {
+        // Query to fetch all employee titles
+        const result = await pool.query('SELECT id, name FROM employee_title');
+
+        // Send response with the data
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error fetching employee titles:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 app.get('/tables', async (req, res) => {
     // Define the query as a constant within the route
     const GET_TABLES_QUERY = 'SELECT Table_Number, Status, GroupID, UserId FROM tblTables';
