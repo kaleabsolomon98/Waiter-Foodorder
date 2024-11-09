@@ -790,7 +790,8 @@ app.get('/employees', async (req, res) => {
 });
 
 // POST /api/employees - Add a new employee
-app.post('/employees', async (req, res) => {
+app.post('/employees', upload.single('image'), async (req, res) => {
+    console.log(req.body);
     const {
         employeeTitle,
         firstName,
@@ -809,7 +810,7 @@ app.post('/employees', async (req, res) => {
     const ADD_EMPLOYEE_QUERY = `
       INSERT INTO Employee (
         EmployeeTitle, FirstName, MiddleName, LastName, Phone, Salary, WagesDaily, 
-        TaxAmount, HireDate, LoginRequirement, ImagePath, SalaryPaymentType
+        TaxAmount, HireDate, LoginRequirement, Image, SalaryPaymentType
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
       RETURNING EmployeeID AS "id";
     `;
@@ -936,6 +937,39 @@ app.get('/tables', async (req, res) => {
     } catch (error) {
         console.error('Database query error:', error);
         res.status(500).json({ message: 'Server error' }); // Return a server error on exception
+    }
+});
+
+// POST method to add a new user
+app.post('/users', async (req, res) => {
+    const { username, password, employeeid, role } = req.body;
+
+    if (!username || !password || !role) {
+        return res.status(400).json({ message: 'Username, password, and role are required' });
+    }
+
+    try {
+        // Hash the password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Insert the new user into the database
+        const query = `
+        INSERT INTO Users (username, password_hash, employeeid, role)
+        VALUES ($1, $2, $3, $4)
+        RETURNING user_id, username, role
+      `;
+        const values = [username, passwordHash, employeeid, role];
+
+        const result = await pool.query(query, values);
+
+        // Return the newly created user info (excluding the password hash)
+        res.status(201).json({
+            message: 'User created successfully',
+            user: result.rows[0],
+        });
+    } catch (error) {
+        console.error('Error inserting user:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 

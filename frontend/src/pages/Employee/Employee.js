@@ -6,17 +6,31 @@ import DatePicker from 'react-datepicker';
 import styles from './Employee.module.css';
 import baseUrl from '../../components/Constants/base_url';
 import "react-datepicker/dist/react-datepicker.css";
+// import moment from 'moment-timezone';
+
 
 const EmployeeRegistration = () => {
     const [employees, setEmployees] = useState([]);
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [newEmployee, setNewEmployee] = useState({
         employeeTitle: '', firstName: '', middleName: '', lastName: '', phone: '', salary: '', dailyWage: '',
-        taxAmount: '', hireDate: new Date().toISOString().slice(0, 10), loginRequired: false, image: null, salaryPaymentType: ''
+        taxAmount: '', hireDate: new Date(), loginRequired: false, image: null, salaryPaymentType: ''
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
+
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    // Assuming the user's timezone is 'America/Los_Angeles'
+    const userTimezone = 'America/Los_Angeles';
+
+    const handleDateChange = (date) => {
+        // Convert the selected date to the user's timezone
+        const dateInUserTimezone = date.toDate();
+        setSelectedDate(dateInUserTimezone);
+    };
+
 
     useEffect(() => {
         const fetchEmployees = async () => {
@@ -45,7 +59,7 @@ const EmployeeRegistration = () => {
                 salary: employee.salary,
                 dailyWage: employee.dailyWage,
                 taxAmount: employee.taxAmount,
-                hireDate: employee.hireDate,
+                hireDate: employee.hireDate.toISOString(),
                 loginRequired: employee.loginRequired,
                 image: null,
                 salaryPaymentType: employee.salaryPaymentType
@@ -54,7 +68,7 @@ const EmployeeRegistration = () => {
             setEditingEmployee(null);
             setNewEmployee({
                 employeeTitle: '', firstName: '', middleName: '', lastName: '', phone: '', salary: '', dailyWage: '',
-                taxAmount: '', hireDate: '', loginRequired: false, image: null, salaryPaymentType: ''
+                taxAmount: '', hireDate: new Date().toISOString(), loginRequired: false, image: null, salaryPaymentType: ''
             });
         }
         setIsModalOpen(true);
@@ -86,7 +100,7 @@ const EmployeeRegistration = () => {
         formData.append('salary', newEmployee.salary);
         formData.append('dailyWage', newEmployee.dailyWage);
         formData.append('taxAmount', newEmployee.taxAmount);
-        formData.append('hireDate', newEmployee.hireDate);
+        formData.append('hireDate', newEmployee.hireDate.toISOString());
         formData.append('loginRequired', newEmployee.loginRequired);
         formData.append('salaryPaymentType', newEmployee.salaryPaymentType);
         formData.append('image', newEmployee.image ? newEmployee.image : editingEmployee?.image);
@@ -155,7 +169,7 @@ const EmployeeRegistration = () => {
                 <tbody>
                     {employees.map((employee) => (
                         <tr key={employee.id}>
-                            <td>{employee.employeeTitle}</td>
+                            <td>{employee.title}</td>
                             <td>{employee.firstName}</td>
                             <td>{employee.lastName}</td>
                             <td>{employee.phone}</td>
@@ -276,14 +290,6 @@ const EmployeeRegistration = () => {
                                         onChange={(e) => setNewEmployee({ ...newEmployee, taxAmount: e.target.value })}
                                     />
                                 </div>
-                                {/* <div className={styles.field}>
-                                    <label>Hire Date</label>
-                                    <DatePicker
-                                        selected={newEmployee.hireDate}
-                                        onChange={(date) => setNewEmployee({ ...newEmployee, hireDate: date })}
-                                        dateFormat="yyyy-MM-dd"
-                                    />
-                                </div> */}
                                 <div className={styles.field}>
                                     <label>Hire Date</label>
                                     <DatePicker
@@ -326,8 +332,8 @@ const EmployeeRegistration = () => {
                                             <input
                                                 type="radio"
                                                 name="salaryPaymentType"
-                                                value="salary"
-                                                checked={newEmployee.salaryPaymentType === 'salary'}
+                                                value="Salary"
+                                                checked={newEmployee.salaryPaymentType === 'Salary'}
                                                 onChange={(e) => setNewEmployee({ ...newEmployee, salaryPaymentType: e.target.value })}
                                             />
                                             Salary
@@ -336,8 +342,8 @@ const EmployeeRegistration = () => {
                                             <input
                                                 type="radio"
                                                 name="salaryPaymentType"
-                                                value="daily"
-                                                checked={newEmployee.salaryPaymentType === 'daily'}
+                                                value="Daily"
+                                                checked={newEmployee.salaryPaymentType === 'Daily'}
                                                 onChange={(e) => setNewEmployee({ ...newEmployee, salaryPaymentType: e.target.value })}
                                             />
                                             Daily
@@ -346,8 +352,8 @@ const EmployeeRegistration = () => {
                                             <input
                                                 type="radio"
                                                 name="salaryPaymentType"
-                                                value="both"
-                                                checked={newEmployee.salaryPaymentType === 'both'}
+                                                value="Both"
+                                                checked={newEmployee.salaryPaymentType === 'Both'}
                                                 onChange={(e) => setNewEmployee({ ...newEmployee, salaryPaymentType: e.target.value })}
                                             />
                                             Both
