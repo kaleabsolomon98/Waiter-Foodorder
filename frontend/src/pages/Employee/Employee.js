@@ -101,7 +101,7 @@ const EmployeeRegistration = () => {
         formData.append('dailyWage', newEmployee.dailyWage);
         formData.append('taxAmount', newEmployee.taxAmount);
         formData.append('hireDate', newEmployee.hireDate.toISOString());
-        formData.append('loginRequired', newEmployee.loginRequired);
+        formData.append('loginRequired', newEmployee.loginRequired ? 'true' : 'false');
         formData.append('salaryPaymentType', newEmployee.salaryPaymentType);
         formData.append('image', newEmployee.image ? newEmployee.image : editingEmployee?.image);
 

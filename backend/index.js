@@ -759,6 +759,17 @@ app.delete('/orders/:id', async (req, res) => {
 });
 
 
+
+app.get('/useremployees', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM employees WHERE login_required = $1', ['yes']);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      res.status(500).send('Server error');
+    }
+  });
+
 // GET /api/employees - Retrieve all employees
 app.get('/employees', async (req, res) => {
     // Define the query constant to fetch selected columns from the Employee table
